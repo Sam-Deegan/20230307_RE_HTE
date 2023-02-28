@@ -18,6 +18,10 @@ for (dir in directories) {
   if (dir != "0_Project_Management") {
     for (subdir in subdirectories) {
       dir.create(file.path(dir, subdir))
+      
+      # Create a dummy text file in each subdirectory
+      file.create(file.path(dir, subdir, "dummy.txt"))
+      cat("This is a dummy text file.", file = file.path(dir, subdir, "dummy.txt"))
     }
   }
 }
@@ -46,9 +50,9 @@ readme_contents <- paste("#", project_title,
                          "\n\n## Contact Information\n\n", contact_info)
 
 # Write the README file
-write(readme_contents, file = "README.md")
+write(readme_contents, "0_Project_Management/Project_Plan.md")
 
-cat(paste0("File '", file_name, "' has been created."))
+cat(paste0("File '", "README.md", "' has been created."))
 
 ### Create Project Plan #######################################################
 
@@ -80,7 +84,7 @@ project_plan_contents <- paste("#", project_title,
 
 write(project_plan_contents , file = "0_Project_Management/Project_Plan.md")
 
-cat(paste0("File '", file_name, "' has been created."))
+cat(paste0("File '", "Project_Plan.md", "' has been created."))
 
 
 

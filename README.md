@@ -36,6 +36,7 @@ Bug Reporting and Commit Communications:
 ## Credits
 
 The published paper used in this exercise is: 
+
 [insert citation here]. 
 
 Extensions are based on:

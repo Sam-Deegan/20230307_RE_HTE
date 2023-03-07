@@ -13,12 +13,11 @@ This project aims to replicate the main findings of a published Treatment Effect
 
 ## Installation
 
-To replicate the results of 
- Instructions on how to install the project and any dependencies that are needed. 
+To replicate the paper's main results, you need the original dataset and R. Dependencies vary depending on the analysis and libraries used. The project has three folders: Project Management, Build, and Analysis. The Build folder contains input data and cleaning, while the Analysis folder contains outputs and analysis.
 
 ## Usage
 
- Examples of how to use the project, including code snippets or screenshots if applicable. 
+Forthcoming: Examples of how to use the project, including code snippets or screenshots if applicable. 
 
 ## Contributing
 
@@ -36,12 +35,20 @@ Bug Reporting and Commit Communications:
 
 ## Credits
 
- A list of the people or organizations who have contributed to the project, as well as any other resources or libraries that were used. 
+The published paper used in this exercise is: 
+[insert citation here]. 
+
+Extensions are based on:
+
+Wager, Stefan, & Athey, Susan. 2018. Estimation and Inference of Heterogeneous Treatment
+Effects using Random Forests. Journal of the American Statistical Association, 113(523),
+1228–1242.
+
 
 ## License
 
- Information on the project's license, including any restrictions on how the code can be used or modified. 
+Information on the project's license, including any restrictions on how the code can be used or modified. 
 
 ## Contact Information
 
- How to get in touch with the project's author or maintainers, including email addresses or social media profiles.
+For questions or concerns, please contact  project team members via the provided email.

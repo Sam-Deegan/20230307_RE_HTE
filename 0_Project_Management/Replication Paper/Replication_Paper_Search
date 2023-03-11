@@ -1,0 +1,107 @@
+# Replication Paper Search: Hetrogenous Treatment Effects
+
+The purpose of this file is to document the selection of the base replication paper. 
+
+## Table of Contents
+
+- [Installation](#installation)
+- [Usage](#usage)
+- [Contributing](#contributing)
+- [Credits](#credits)
+- [License](#license)
+- [Contact Information](#contact-information)
+
+## Criteria
+
+Selection criteria for the replication paper are as follows:
+
+- Interesting Topic (Y/N)
+- The paper must apply Marginal Treatment Effects (M)
+- Data must be publicly available for replication (D)
+- The Paper must not have been subject to a Causal Forest Extension (E)
+- The paper must come from an approved list of journals (J)
+- The Replication must be complete in a language other than Stata (R)
+
+## Approved List of Journals
+
+### Quarterly Journal of Economics
+
+Racial Bias in Bail Decisions
+David Arnold, Will Dobbie, Crystal S Yang
+The Quarterly Journal of Economics,
+Volume 133, Issue 4, November 2018, 
+Pages 1885–1932
+
+### American Economic Review
+
+Two-Way Fixed Effects Estimators with Heterogeneous Treatment Effects
+Clément de Chaisemartin
+Xavier D'Haultfœuille
+AMERICAN ECONOMIC REVIEW
+VOL. 110, NO. 9, SEPTEMBER 2020
+(pp. 2964-96)
+
+Aggregating Distributional Treatment Effects: A Bayesian Hierarchical Analysis of the Microcredit Literature
+Rachael Meager
+AMERICAN ECONOMIC REVIEW
+VOL. 112, NO. 6, JUNE 2022
+(pp. 1818-47)
+
+Intergenerational Mobility and Preferences for Redistribution
+Alberto Alesina, Stefanie Stantcheva, Edoardo Teso
+AMERICAN ECONOMIC REVIEW
+VOL. 108, NO. 2, FEBRUARY 2018
+(pp. 521-54)
+
+The Effects of Rent Control Expansion on Tenants, Landlords, and Inequality: Evidence from San Francisco
+Rebecca Diamond, Tim McQuade, Franklin Qian
+AMERICAN ECONOMIC REVIEW
+VOL. 109, NO. 9, SEPTEMBER 2019
+(pp. 3365-94)
+
+### Journal of Political Economy
+
+Democracy Does Cause Growth
+Daron Acemoglu, Suresh Naidu, Pascual Restrepo, and James A. Robinson
+Journal of Political Economy
+Volume 127, Number 1, February 2019
+
+### Review of Economic Studies
+
+### AEJ: Applied
+
+Trade and Income—Exploiting Time Series in Geography
+James Feyrer
+AMERICAN ECONOMIC JOURNAL: APPLIED ECONOMICS
+VOL. 11, NO. 4, OCTOBER 2019
+(pp. 1-35)
+
+Are Credit Markets Still Local? Evidence from Bank Branch Closings (D)
+Hoai-Luu Q. Nguyen
+AMERICAN ECONOMIC JOURNAL: APPLIED ECONOMICS
+VOL. 11, NO. 1, JANUARY 2019
+(pp. 1-32)
+
+### AEJ: Policy
+
+### Journal of the European Economic Association
+
+### Economic Journal
+
+### Review of Economics and Statistics
+
+### Journal of Labour Economics
+
+### Journal of Development Economics
+
+### Journal of Public Economics
+
+### Journal of Human Resources
+
+No Research Interest
+
+### Journal of Health Economics
+
+No Research Interest
+
+

@@ -2,21 +2,12 @@
 
 The purpose of this file is to document the selection of the base replication paper. 
 
-## Table of Contents
-
-- [Installation](#installation)
-- [Usage](#usage)
-- [Contributing](#contributing)
-- [Credits](#credits)
-- [License](#license)
-- [Contact Information](#contact-information)
-
 ## Criteria
 
 Selection criteria for the replication paper are as follows:
 
 - Interesting Topic (Y/N)
-- The paper must apply Marginal Treatment Effects (M)
+- The paper must apply Treatment Effects, RCT papers seem ideal (M)
 - Data must be publicly available for replication (D)
 - The Paper must not have been subject to a Causal Forest Extension (E)
 - The paper must come from an approved list of journals (J)
@@ -34,55 +25,25 @@ Pages 1885–1932
 
 ### American Economic Review
 
-Two-Way Fixed Effects Estimators with Heterogeneous Treatment Effects
-Clément de Chaisemartin
-Xavier D'Haultfœuille
-AMERICAN ECONOMIC REVIEW
-VOL. 110, NO. 9, SEPTEMBER 2020
-(pp. 2964-96)
-
-Aggregating Distributional Treatment Effects: A Bayesian Hierarchical Analysis of the Microcredit Literature
-Rachael Meager
-AMERICAN ECONOMIC REVIEW
-VOL. 112, NO. 6, JUNE 2022
-(pp. 1818-47)
-
-Intergenerational Mobility and Preferences for Redistribution
-Alberto Alesina, Stefanie Stantcheva, Edoardo Teso
-AMERICAN ECONOMIC REVIEW
-VOL. 108, NO. 2, FEBRUARY 2018
-(pp. 521-54)
-
-The Effects of Rent Control Expansion on Tenants, Landlords, and Inequality: Evidence from San Francisco
-Rebecca Diamond, Tim McQuade, Franklin Qian
-AMERICAN ECONOMIC REVIEW
-VOL. 109, NO. 9, SEPTEMBER 2019
-(pp. 3365-94)
-
-### Journal of Political Economy
-
-Democracy Does Cause Growth
-Daron Acemoglu, Suresh Naidu, Pascual Restrepo, and James A. Robinson
-Journal of Political Economy
-Volume 127, Number 1, February 2019
-
 ### Review of Economic Studies
 
 ### AEJ: Applied
 
-Trade and Income—Exploiting Time Series in Geography
-James Feyrer
+Teaching Labor Laws: Evidence from a Randomized Control Trial in South Africa (M, D, E, J)
+Marianne Bertrand
+Bruno Crépon
 AMERICAN ECONOMIC JOURNAL: APPLIED ECONOMICS
-VOL. 11, NO. 4, OCTOBER 2019
-(pp. 1-35)
-
-Are Credit Markets Still Local? Evidence from Bank Branch Closings (D)
-Hoai-Luu Q. Nguyen
-AMERICAN ECONOMIC JOURNAL: APPLIED ECONOMICS
-VOL. 11, NO. 1, JANUARY 2019
-(pp. 1-32)
+VOL. 13, NO. 4, OCTOBER 2021
+(pp. 125-49)
 
 ### AEJ: Policy
+
+Why Are Relatively Poor People Not More Supportive of Redistribution? Evidence from a Randomized Survey Experiment across Ten Countries (M, D, E, J)
+Christopher Hoy
+Franziska Mager
+AMERICAN ECONOMIC JOURNAL: ECONOMIC POLICY
+VOL. 13, NO. 4, NOVEMBER 2021
+(pp. 299-328)
 
 ### Journal of the European Economic Association
 
@@ -93,6 +54,13 @@ VOL. 11, NO. 1, JANUARY 2019
 ### Journal of Labour Economics
 
 ### Journal of Development Economics
+
+
+Liquidity constraints, informal institutions, and the adoption of weather insurance: A randomized controlled Trial in Ethiopia (M, D, E, J)
+Temesgen Belissa a b, Erwin Bulte a c, Francesco Cecchi a d, Shubhashis Gangopadhyay d e f g, Robert Lensink a d
+
+Overcoming smallholder farmers’ post-harvest constraints through harvest loans and storage technology: Insights from a randomized controlled trial in Tanzania (M, D (on request), E, J)
+Author links open overlay panelHira Channa a, Jacob Ricker-Gilbert b, Shiferaw Feleke c, Tahirou Abdoulaye d
 
 ### Journal of Public Economics
 

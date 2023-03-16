@@ -1,0 +1,68 @@
+3.Randomization
+
+*Multi-level randomization at the Iddir level to assign the 144 Iddirs to six experimental arms
+(number of Iddirs and observations in brackets)
+1) Standard Index Insurance [IBI: 16 Iddirs, N=853]
+2) Standard Index Insurance via Iddir promotions [IBI_Iddir: 48 Iddirs, N=3056]
+3) IOU insurance [IOU: 16 Iddirs, N=685]
+4) IOU insurance with Contract [IOU_C: 16 Iddirs, N=633]
+5) IOU insurance via Iddir promotions [IOU_Iddir: 24 Iddirs, N=1887]
+6) IOU insurance via Iddir promotions with Contract [IOU_Iddir_C: 24 Iddirs, N=1465]
+
+Balancing tests
+Dependent variables:
+	(1) Household observables → Table 1
+		Age (in years)
+		Sex (male=1; female=0)
+		Marital status (married=1; not-married=0)
+		Education (years of schooling)
+		Family size
+		Total income in the last month (in Birr)
+		Drought (household experienced a drought in the last three years=1; not experienced=0)
+		Insurance (household had purchased index insurance during the past three years=1; not had purchased=0)
+	(2) Farming variables → Table 2
+		Maize, haricot, teff, sorghum, wheat, and barley (quantities of crops produced in the last cropping season)
+		Land (total land under cultivation)
+		Savings (having formal savings=1; not having=0)
+Independent variables: Treatment group dummies (5 dummies)
+Clustering: Iddirs
+Wald tests (showing p-values of equality)
+
+
+4. Results
+
+4.1 Uptake
+
+Uptake rates across IOU treatments, 95% CI clustered at Iddir level → Figure 1
+
+Regression analysis → Table 3
+Dependent variable: Uptake
+Independent variable: Treatment group dummies
+Clustering: Iddirs
+Wald tests
+(1) Parsimonious model → Column 1
+(2) Additional controls → Column 2
+	Controls:
+		Age, Male, Married, Education level, Family size, Income last month, Drought dummy, Insured before dummy
+		Maize production, Haricot production, Teff production, Sorghum production, Wheat production, Barley production
+		Land size, Savings
+	Fixed effects: Kebele
+(3) Excluding Dalota Mati → Column 3
+	Drop: Kebele==Dalota Mati (which all defaults belong to)
+	Controls:
+		Age, Male, Married, Education level, Family size, Income last month, Drought dummy, Insured before dummy
+		Maize production, Haricot production, Teff production, Sorghum production, Wheat production, Barley production
+		Land size, Savings
+	Fixed effects: Kebele
+	
+4.2 Heterogeneity
+
+Liquidity → Table 4
+ (1) Median Income (IHS)
+	Above: Households above median income → Colunm 1
+	Below: Households below median income → Colunm 2
+	Pooled: Adding income and the interaction term of income and treatment dummies → Column 3
+(2) Savings
+	Yes: Households with savings → Colunm 4
+	No: Households without savings → Colunm 5
+	Pooled: Adding savings and the interaction term of savings and treatment dummies → Column 6

@@ -22,10 +22,8 @@ data <- read_csv(file.path("1_Build//A_Input//1-s2.0-S0304387818313154-mmc1.csv"
 
 # Check Data Structure
 str(data)
-
-# Convert Data 
   
-  # Convert Date
+# Convert Date
 data <- data %>% 
   mutate(IntervDate = as.Date(IntervDate, format = "%B %d, %Y"),
          Dateinterview2 = as.Date(Dateinterview2, format = "%B %d, %Y"))
@@ -34,8 +32,9 @@ data <- data %>%
 data <- data %>% 
   mutate(across(where(is.character),as_factor))
 
-
 # Summary Statistics
+
+summary(data)
 
 ## 4. Missing Data ############################################################
 

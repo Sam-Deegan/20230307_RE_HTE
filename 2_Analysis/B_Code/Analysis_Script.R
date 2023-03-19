@@ -125,6 +125,15 @@ outcome_vars <- c("Age", "Sex", "Mstatus", "Education", "Famsize", "TincomelastM
 
 
 # Chapter 3: Production and Savings, Table 1
+results <- list()
+for (y in y_list) {
+  # Fit the regression model
+  model <- lm(y ~ predictor_var)
+  
+  # Store the regression results
+  results[[y]] <- summary(model)
+}
+
 
 ## B. Extension ###############################################################
 

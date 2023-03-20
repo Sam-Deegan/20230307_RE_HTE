@@ -77,6 +77,8 @@ outlier_counts_col <- data_num_zscr %>%
   summarize(across(where(is.numeric), ~ sum(. > 3 | . < -3, na.rm = TRUE)))
 
 # Handle Duplicates
+
+
   # No action yet. Too many outliers to consider. Need to limit focus to relevant outliers. Consult paper. 
 
 

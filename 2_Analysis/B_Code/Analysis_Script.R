@@ -89,7 +89,7 @@ treatment_count <- data %>%
   summarise(Observations = n(),
             Iddirs = n_distinct(iddir))
 
-# Chapter 3: Socio-Economic Balance, Table 1
+# Chapter 3: Socio-Economic Balance, Table 1 & 2
 
 # specify "Standard Insurance (coops)" as the reference level
 data$Randomization1 <- factor(data$Randomization1, levels = c("standard insurance through the usual channel (coops)", 
@@ -120,19 +120,30 @@ data <- data %>%
 predictor_var <- c("Dum_Insrnce_Stndrd_Iddr", "Dum_Insrnce_Iddr", "Dum_IOU_Iddr_BC", "Dum_IOU_Iddr", "Dum_IOU_BC", "Dum_IOU")
 
 # Define the predictor variables
-outcome_vars <- c("Age", "Sex", "Mstatus", "Education", "Famsize", "TincomelastMnth", "droughtdummy", "buyIBIdummy")
+outcome_household <- c("Age", "Sex", "Mstatus", "Education", "Famsize", "TincomelastMnth", "droughtdummy", "buyIBIdummy")
+outcome_farming <- c("Maze","Haricot","Teff","Sorghum","Wheat","Barley","Land","Savings")
 
 
-
-# Chapter 3: Production and Savings, Table 1
-results <- list()
-for (y in y_list) {
+# Chapter 3: Production and Savings, Table 1 & 2
+results_household <- list()
+for (y in outcome_household) {
   # Fit the regression model
   model <- lm(y ~ predictor_var)
   
   # Store the regression results
-  results[[y]] <- summary(model)
+  results_household[[y]] <- summary(model)
 }
+
+results_farming <- list()
+for (y in outcome_farming) {
+  # Fit the regression model
+  model <- lm(y ~ predictor_var)
+  
+  # Store the regression results
+  results_farming[[y]] <- summary(model)
+}
+
+
 
 
 ## B. Extension ###############################################################

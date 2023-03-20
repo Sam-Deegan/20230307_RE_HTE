@@ -209,7 +209,7 @@ treatment_count <- data %>%
             Iddirs = n_distinct(iddir))
         
 
-
+ 
 # Compare Dummies to Paper
 Treatment_check <- data %>%
   count(Randomization1, randomgr1_1, randomgr1_2, randomgr1_3, randomgr1_4, randomgr1_5, randomgr1_6) 

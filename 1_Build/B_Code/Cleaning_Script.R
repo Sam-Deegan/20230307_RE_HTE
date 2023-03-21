@@ -43,8 +43,7 @@ na_counts <- data %>%
   summarise(across(everything(), ~ sum(is.na(.))))
 
   # Missing Data
-na_counts <- na_counts %>% 
-  select(where(~ any(. != 0)))
+na_counts <- na_counts %>% select(which(colSums(. == 0) == 0))
 
 # Handle Missing Data
 

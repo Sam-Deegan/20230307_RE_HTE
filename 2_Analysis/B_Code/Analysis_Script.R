@@ -175,11 +175,11 @@ se_2a_8 <- sqrt(diag(vcovCL(out_bal_2_var_8, cluster = data$iddir)))
 
 # Wald Test- Not Correct
 out_bal_1b_var_1 <- lm(maizeqty  ~ Dum_Insrnce_Iddr + Dum_IOU_Iddr_BC + Dum_IOU_Iddr + Dum_IOU_BC + Dum_IOU, data = data)
-out_bal_1b_var_2 <- lm(sHaricotQty ~ Dum_Insrnce_Iddr + Dum_IOU_Iddr_BC + Dum_IOU_Iddr + Dum_IOU_BC + Dum_IOU, data = data)
+out_bal_1b_var_2 <- lm(HaricotQty ~ Dum_Insrnce_Iddr + Dum_IOU_Iddr_BC + Dum_IOU_Iddr + Dum_IOU_BC + Dum_IOU, data = data)
 out_bal_1b_var_3 <- lm(Teffqty  ~ Dum_Insrnce_Iddr + Dum_IOU_Iddr_BC + Dum_IOU_Iddr + Dum_IOU_BC + Dum_IOU, data = data)
 out_bal_1b_var_4 <- lm(SorghumQty ~ Dum_Insrnce_Iddr + Dum_IOU_Iddr_BC + Dum_IOU_Iddr + Dum_IOU_BC + Dum_IOU, data = data)
 out_bal_1b_var_5 <- lm(Wheatqty ~ Dum_Insrnce_Iddr + Dum_IOU_Iddr_BC + Dum_IOU_Iddr + Dum_IOU_BC + Dum_IOU, data = data)
-out_bal_1b_var_6 <- lm(TBarelyqty ~ Dum_Insrnce_Iddr + Dum_IOU_Iddr_BC + Dum_IOU_Iddr + Dum_IOU_BC + Dum_IOU, data = data)
+out_bal_1b_var_6 <- lm(Barelyqty ~ Dum_Insrnce_Iddr + Dum_IOU_Iddr_BC + Dum_IOU_Iddr + Dum_IOU_BC + Dum_IOU, data = data)
 out_bal_1b_var_7 <- lm(Cultlandsize10_a ~ Dum_Insrnce_Iddr + Dum_IOU_Iddr_BC + Dum_IOU_Iddr + Dum_IOU_BC + Dum_IOU, data = data)
 out_bal_1b_var_8 <- lm(saving_dummy ~ Dum_Insrnce_Iddr + Dum_IOU_Iddr_BC + Dum_IOU_Iddr + Dum_IOU_BC + Dum_IOU, data = data)
 
@@ -194,80 +194,15 @@ addtnl_mdl  <- lm(Uptake1dummy ~ Dum_Insrnce_Iddr + Dum_IOU_Iddr_BC + Dum_IOU_Id
 addtnl_se <- sqrt(diag(vcovCL(addtnl_mdl, cluster = data$iddir)))
 summary(addtnl_mdl)
 
-  # Excluding Dalota Mati
-  # Uncomplete!!
-Excl_DltMt_mdl  <-  data %>% filter(data, Kebele == !"Dalota Mati") %>% lm(Uptake1dummy ~ Dum_Insrnce_Iddr + Dum_IOU_Iddr_BC + Dum_IOU_Iddr + Dum_IOU_BC + Dum_IOU + Age + sex_dummy + marriage_dummy + Education + Famsize + TincomelastMnth + FSevdrought + buyIBIdummy + maizeqty + HaricotQty + Teffqty + SorghumQty + Wheatqty + Barelyqty + Cultlandsize10_a + saving_dummy + factor(Kebele), data = data)
+
+  # Excluding Daloti #Mati
+
+data_filtered <- data %>% filter(Kebele != "Dalota Mati")
+
+Excl_DltMt_mdl <- lm(Uptake1dummy ~ Dum_Insrnce_Iddr + Dum_IOU_Iddr_BC + Dum_IOU_Iddr + Dum_IOU_BC + Dum_IOU + Age + sex_dummy + marriage_dummy + Education + Famsize + TincomelastMnth + FSevdrought + buyIBIdummy + maizeqty + HaricotQty + Teffqty + SorghumQty + Wheatqty + Barelyqty + Cultlandsize10_a + saving_dummy + factor(Kebele), data = data)
 addtnl_se <- sqrt(diag(vcovCL(addtnl_mdl, cluster = data$iddir)))
 summary(addtnl_mdl)
 ## 8. Plots and Graphs ########################################################
-
-# Chapter 3 Treatments
-
-treatment_count <- data %>%
-  group_by(Randomization1) %>%
-  summarise(Observations = n(),
-            Iddirs = n_distinct(iddir))
-        
-
- 
-# Compare Dummies to Paper
-Treatment_check <- data %>%
-  count(Randomization1, randomgr1_1, randomgr1_2, randomgr1_3, randomgr1_4, randomgr1_5, randomgr1_6) 
-
-# Chapter 3: Socio-Economic Balance, Table 1 & 2
-
-# specify "Standard Insurance (coops)" as the reference level
-data$Randomization1 <- factor(data$Randomization1, levels = c("standard insurance through the usual channel (coops)", 
-                                                              "Standard insurance through iddirs", 
-                                                              "IOU insurance through iddirs with BC",
-                                                              "IOU insurance through iddirs without BC",
-                                                              "IOU insurance through the usual channel with BC",
-                                                              "IOU insurance through usual channel without BC"))
-
-# Create Dummy Variables. "Standard Insurance (coops)" set as 0
-treatment_dummy <- model.matrix(~ Randomization1 - 1, data = data)
-
-str(treatment_dummy)
-
-# Combine Data and Dummies
-data <- cbind(data, treatment_dummy)
-
-# Rename Dummies
-data <- data %>%
-  rename(Dum_Insrnce_Stndrd_Iddr = "Randomization1standard insurance through the usual channel (coops)", 
-         Dum_Insrnce_Iddr = "Randomization1Standard insurance through iddirs",
-         Dum_IOU_Iddr_BC = "Randomization1IOU insurance through iddirs with BC",
-         Dum_IOU_Iddr = "Randomization1IOU insurance through iddirs without BC",
-         Dum_IOU_BC = "Randomization1IOU insurance through the usual channel with BC",
-         Dum_IOU = "Randomization1IOU insurance through usual channel without BC")
-
-# Define the outcome variable
-predictor_var <- c("Dum_Insrnce_Stndrd_Iddr", "Dum_Insrnce_Iddr", "Dum_IOU_Iddr_BC", "Dum_IOU_Iddr", "Dum_IOU_BC", "Dum_IOU")
-
-# Define the predictor variables
-outcome_household <- c("Age", "Sex", "Mstatus", "Education", "Famsize", "TincomelastMnth", "droughtdummy", "buyIBIdummy")
-outcome_farming <- c("Maze","Haricot","Teff","Sorghum","Wheat","Barley","Land","Savings")
-
-
-# Chapter 3: Production and Savings, Table 1 & 2
-results_household <- list()
-for (y in outcome_household) {
-  # Fit the regression model
-  model <- lm(y ~ predictor_var)
-  
-  # Store the regression results
-  results_household[[y]] <- summary(model)
-}
-
-results_farming <- list()
-for (y in outcome_farming) {
-  # Fit the regression model
-  model <- lm(y ~ predictor_var)
-  
-  # Store the regression results
-  results_farming[[y]] <- summary(model)
-}
-
 
 
 

@@ -1,29 +1,19 @@
 
 ## Script Structure ###########################################################
 
-## A. Replication #############################################################
-
-# 1. Library Packages
-# 2. Prepare Data
-# 3. ...
-# 4. ...
-# 5. ...
-# 6. ...
-# 7. ...
-# 8. Plots and Graphs
-
-## B. Extension ###############################################################
-
-# 1. Library Packages
-# 2. Prepare Data
-# 3. Split Data
-# 4. Fit Causal Forest Model
-# 5. Predict Treatment Effects
-# 6. Calculate Average Treatment Effects
-# 7. Evaluate Model
-# 8. Plots and Graphs
+  # A. Replication 
+  # B. Extension 
 
 ## A. Replication #############################################################
+
+  # 1. Library Packages
+  # 2. Prepare Data
+  # 3. ...
+  # 4. ...
+  # 5. ...
+  # 6. ...
+  # 7. ...
+  # 8. Plots and Graphs
 
 ## 1. Library Packages ########################################################
 
@@ -100,10 +90,16 @@ data <- data %>%
 
 # Summary Statistics
 
-summary(data)
+summary(data$Iddir)
 
 ## 4.Randomisation ############################################################
 
+# To Do:
+  # Observation count by contract correct. 
+    # Iddir numbers are high relative to paper.>24
+    # Not Kebele, number to low, =12
+
+# Table Results
 
   # Treatment Summary Statistics - Correct
 treatment_count <- data %>%
@@ -116,6 +112,10 @@ treatment_count <- data %>%
     # Socio-Economic Balance
 
 ## 5. Balance Test 1 ##########################################################
+
+# To Do:
+# Wald Tests
+# Table Results
 
 # Balance Test 1a 
 
@@ -153,6 +153,10 @@ out_bal_1b_var_8 <- lm(buyIBIdummy ~ Dum_Insrnce_Iddr + Dum_IOU_Iddr_BC + Dum_IO
 
 ## 6. Balance Test 2 ##########################################################
 
+# To Do:
+# Wald Tests
+# Table Results
+
 # Balance Test 2a
 
 # Regress Socio-Economic Variable on Treatment - Correct
@@ -187,9 +191,14 @@ out_bal_1b_var_8 <- lm(saving_dummy ~ Dum_Insrnce_Iddr + Dum_IOU_Iddr_BC + Dum_I
 
 ## 7. Insurance Uptake Rates ##################################################
 
+# To Do:
+  # Wald Tests
+  # Table Results
+
   # Parsimonious Model 
 prsmns_mdl  <- lm(Uptake1dummy ~ Dum_Insrnce_Iddr + Dum_IOU_Iddr_BC + Dum_IOU_Iddr + Dum_IOU_BC + Dum_IOU, data = data)
 prsmns_se <- sqrt(diag(vcovCL(prsmns_mdl, cluster = data$iddir)))
+summary(prsmns_mdl)
 
   # Additional Model 
 addtnl_mdl  <- lm(Uptake1dummy ~ Dum_Insrnce_Iddr + Dum_IOU_Iddr_BC + Dum_IOU_Iddr + Dum_IOU_BC + Dum_IOU + Age + sex_dummy + marriage_dummy + Education + Famsize + TincomelastMnth + FSevdrought + buyIBIdummy + maizeqty + HaricotQty + Teffqty + SorghumQty + Wheatqty + Barelyqty + Cultlandsize10_a + saving_dummy + factor(Kebele), data = data)
@@ -200,17 +209,28 @@ summary(addtnl_mdl)
 
 data_filtered <- data %>% filter(Kebele != "Dalota Mati")
 
-  
-Excl_DltMt_mdl <- lm(Uptake1dummy ~ Dum_Insrnce_Iddr + Dum_IOU_Iddr_BC + Dum_IOU_Iddr + Dum_IOU_BC + Dum_IOU + Age + sex_dummy + marriage_dummy + Education + Famsize + TincomelastMnth + FSevdrought + buyIBIdummy + maizeqty + HaricotQty + Teffqty + SorghumQty + Wheatqty + Barelyqty + Cultlandsize10_a + saving_dummy + factor(Kebele), data = data)
-addtnl_se <- sqrt(diag(vcovCL(addtnl_mdl, cluster = data$iddir)))
-summary(addtnl_mdl)
+  # Additional Model  
+excl_DltMt_mdl <- lm(Uptake1dummy ~ Dum_Insrnce_Iddr + Dum_IOU_Iddr_BC + Dum_IOU_Iddr + Dum_IOU_BC + Dum_IOU + Age + sex_dummy + marriage_dummy + Education + Famsize + TincomelastMnth + FSevdrought + buyIBIdummy + maizeqty + HaricotQty + Teffqty + SorghumQty + Wheatqty + Barelyqty + Cultlandsize10_a + saving_dummy + factor(Kebele), data = data)
+excl_DltMt_se <- sqrt(diag(vcovCL(addtnl_mdl, cluster = data$iddir)))
+summary(excl_DltMt_mdl)
+
+
+
+## 8. Plots and Graphs ########################################################
 
 ## 8. Plots and Graphs ########################################################
 
 
-
-
 ## B. Extension ###############################################################
+
+  # 1. Library Packages
+  # 2. Prepare Data
+  # 3. Split Data
+  # 4. Fit Causal Forest Model
+  # 5. Predict Treatment Effects
+  # 6. Calculate Average Treatment Effects
+  # 7. Evaluate Model
+  # 8. Plots and Graphs
 
 ## 1. Library Packages ########################################################
 
@@ -231,7 +251,7 @@ write_csv(data, "2_Analysis//A_Input//Cleaned_Data.csv")
 treatment <- "treatment_variable_name"
 
 # Set Outcome Variable
-outcome <- "outcome_variable_name"
+outcome <- "Uptake1dummy"
 
 # Set covariates
 covariates <- c("covariate1", "covariate2", "covariate3")

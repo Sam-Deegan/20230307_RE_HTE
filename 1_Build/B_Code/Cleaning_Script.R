@@ -7,7 +7,8 @@
 # 4. Missing Data
 # 5. Duplicate Data
 # 6. Outliers
-# 7. Export Cleaned Data
+# 7. Additional Formatting
+# 8. Export Cleaned Data
 
 ## 1. Library Packages ########################################################
 
@@ -23,6 +24,28 @@ data <- read_csv(file.path("1_Build//A_Input//1-s2.0-S0304387818313154-mmc1.csv"
 # Check Data Structure
 str(data)
   
+# Identify Relevant Variables
+relevant_columns <- c("Identifier",
+                      "Randomization1",
+                      "Sex",
+                      "Mstatus",
+                      "HaveSaving12_a",
+                      "Education",
+                      "Famsize",
+                      "TincomelastMnth",
+                      "FSevdrought",
+                      "buyIBIdummy",
+                      "maizeqty",
+                      "HaricotQty",
+                      "Teffqty",
+                      "SorghumQty",
+                      "Wheatqty",
+                      "Barelyqty",
+                      "Cultlandsize10_a",
+                      "HaveSaving12_a",
+                      "iddir",
+                      "Uptake1dummy") 
+
 # Convert Date
 data <- data %>% 
   mutate(IntervDate = as.Date(IntervDate, format = "%B %d, %Y"),
@@ -38,53 +61,75 @@ summary(data)
 
 ## 4. Missing Data ############################################################
 
-# Check Missing Data
-na_counts <- data %>% 
-  summarise(across(everything(), ~ sum(is.na(.))))
+# Check All Missing Data
+na_counts_all <- data %>% 
+  summarise(across(everything(), ~ sum(is.na(.)))) # Missing values in data set
 
-  # Missing Data
-na_counts <- na_counts %>% select(which(colSums(. == 0) == 0))
+  # Missing All Data Count
+na_counts_all <- na_counts_all %>% select_if(~ any(.!= 0)) # Missing values confined to mostly unused variables
+
+# Check Relevant Variables - None
+na_counts_rel <- data %>% select(all_of(relevant_columns)) %>%
+  summarise(across(everything(), ~ sum(is.na(.)))) # Missing Values not relevant to replication
+
+# Missing Relevant Data Count - None
+na_counts_rel <- na_counts_rel %>% select_if(~any(.!= 0)) # Confirm missing values not relevant to missing data
 
 # Handle Missing Data
 
-## No Action - Na's appear to be limited to non-essential data
+  # No action required for missing data confined to irrelevant data
+
 
 ## 5. Duplicate Data ##########################################################
 
 # Check Duplicates
+
 dup_rows <- data %>%
-  filter(duplicated(.))
+  filter(duplicated(.)) # No duplicated data rows
 
 # Handle Duplicates
 
-## No Action - No duplicate rows
+# No action required on duplicate data
 
 ## 6 . Outliers ###############################################################
 
 # Check for Outliers
 
-  # Select Numerical Columns
-data_num <- data %>%
-  select_if(is.numeric)
+  # Select Relevant Numerical Columns
+data_num <- data %>% select(all_of(relevant_columns)) %>%
+  select_if(is.numeric) # 14 relevant variables
+
+  # Convert to Character
+data_num$Identifier <- as.character(data_num$Identifier) # Allows use of where(is.numeric) function
 
   # Calculate Z-Scores
 data_num_zscr <- data_num %>% 
-  mutate(across(where(is.numeric), ~ (.-mean(.))/sd(.)))
+  mutate(across(where(is.numeric), ~ (.-mean(.))/sd(.))) # Outliers present
 
   # Count number of outliers by row
 outlier_counts_col <- data_num_zscr %>%
-  summarize(across(where(is.numeric), ~ sum(. > 3 | . < -3, na.rm = TRUE)))
+  summarize(across(where(is.numeric), ~ sum(. > 3 | . < -3, na.rm = TRUE))) # Outliers counts by variable up to 299
 
-# Handle Duplicates
+# Missing Relevant Data Count - None
+outlier_list <- data_num_zscr %>% 
+  filter_at(vars(2:14), any_vars(abs(.) > 3)) %>%
+  select(Identifier, everything()) # Lots of outliers but none seem outlandish with the exception of 1236. But may be high due to non-farming income
 
 
-  # No action yet. Too many outliers to consider. Need to limit focus to relevant outliers. Consult paper. 
+# Handle Outliers
 
 
-## 7. Export Cleaned Data #####################################################
+  # No Action. Replicating results are consistent with paper. May warrant assessment with reduced sample 
 
-  # Write Data
-write_csv(data, "1_Build//C_Output//Cleaned_Data.csv")
+## 7. Additional Formatting ###################################################
 
+
+## 8. Export Cleaned Data #####################################################
+
+  # Write RDS Data 
+saveRDS(data, "1_Build//C_Output//Cleaned_Data.rds") # Retains formatting
+
+  # Write Excel Copy
+write_csv(data, "1_Build//C_Output//Cleaned_Data.csv") # External Checks
 
 ## Script End #################################################################

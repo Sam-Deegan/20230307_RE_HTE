@@ -39,12 +39,14 @@ library(MASS)
 ## 2. Prepare Data ############################################################
 
 # Load Data
-data <- read_csv(file.path("1_Build//C_Output//Cleaned_Data.csv"))
+data <- readRDS(file.path("1_Build//C_Output//Cleaned_Data.rds"))
 
 # Copy Data to Inputs
 write_csv(data, "2_Analysis//A_Input//Cleaned_Data.csv")
 
 ## 3. Check Structure #########################################################
+
+# Consider moving formatting to Build file to tidy up analysis. 
 
 # Check Data Structure
 str(data)
@@ -194,14 +196,15 @@ addtnl_mdl  <- lm(Uptake1dummy ~ Dum_Insrnce_Iddr + Dum_IOU_Iddr_BC + Dum_IOU_Id
 addtnl_se <- sqrt(diag(vcovCL(addtnl_mdl, cluster = data$iddir)))
 summary(addtnl_mdl)
 
-
   # Excluding Daloti #Mati
 
 data_filtered <- data %>% filter(Kebele != "Dalota Mati")
 
+  
 Excl_DltMt_mdl <- lm(Uptake1dummy ~ Dum_Insrnce_Iddr + Dum_IOU_Iddr_BC + Dum_IOU_Iddr + Dum_IOU_BC + Dum_IOU + Age + sex_dummy + marriage_dummy + Education + Famsize + TincomelastMnth + FSevdrought + buyIBIdummy + maizeqty + HaricotQty + Teffqty + SorghumQty + Wheatqty + Barelyqty + Cultlandsize10_a + saving_dummy + factor(Kebele), data = data)
 addtnl_se <- sqrt(diag(vcovCL(addtnl_mdl, cluster = data$iddir)))
 summary(addtnl_mdl)
+
 ## 8. Plots and Graphs ########################################################
 
 

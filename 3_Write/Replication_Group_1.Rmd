@@ -1,5 +1,5 @@
 ---
-title: "Untitled"
+title: "Replication_Group_1"
 short: "A shorter title"
 journal: "AER" # AER, AEJ, PP, JEL
 month: "`r format(Sys.Date(), '%m')`"
@@ -27,10 +27,8 @@ acknowledgements: |
   Acknowledgements
 abstract: |
   Abstract goes here
-output: rticles::aea_article
+output:  rticles::aea_article
 ---
-
-American Economic Review Pointers:
 
 \begin{itemize}
 \item Do not use an "Introduction" heading. Begin your introductory material

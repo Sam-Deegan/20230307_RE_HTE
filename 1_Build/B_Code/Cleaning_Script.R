@@ -21,6 +21,8 @@ data <- read_csv(file.path("1_Build//A_Input//1-s2.0-S0304387818313154-mmc1.csv"
 
 ## 3. Check Structure #########################################################
 
+data[data == " "] <- NA
+
 # Check Data Structure
 str(data)
   
@@ -96,7 +98,7 @@ dup_rows <- data %>%
 # Check for Outliers
 
   # Select Relevant Numerical Columns
-data_num <- data %>% select(all_of(relevant_columns)) %>%
+data_num <- data %>% dplyr::select(all_of(relevant_columns)) %>%
   select_if(is.numeric) # 14 relevant variables
 
   # Convert to Character
@@ -117,7 +119,6 @@ outlier_list <- data_num_zscr %>%
 
 
 # Handle Outliers
-
 
   # No Action. Replicating results are consistent with paper. May warrant assessment with reduced sample 
 

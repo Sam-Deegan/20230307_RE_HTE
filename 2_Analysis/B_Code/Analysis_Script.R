@@ -24,7 +24,6 @@ library(caret) # Machine Learning Package
 library(sandwich) # Standard Error Adjustment Package
 library(lmtest) # Regression Model Testing Package
 library(car) # 
-library(MASS)
 
 ## 2. Prepare Data ############################################################
 
@@ -240,21 +239,73 @@ library(caret) # Machine Learning Package
 
 ## 2. Prepare Data ############################################################
 
-# Load Data
-data <- read_csv(file.path("1_Build//C_Output//Cleaned_Data.csv"))
+  # Relevant Variables
+relevant_columns <- c("Identifier",
+                      "Randomization1",
+                      "Uptake1dummy",
+                      "Dum_Insrnce_Stndrd",
+                      "Dum_Insrnce_Iddr",
+                      "Dum_IOU_Iddr_BC",
+                      "Dum_IOU_Iddr",
+                      "Dum_IOU_BC",
+                      "Dum_IOU",
+                      "Age",
+                      "sex_dummy",
+                      "marriage_dummy",
+                      "saving_dummy",
+                      "Education",
+                      "Famsize",
+                      "TincomelastMnth",
+                      "FSevdrought",
+                      "buyIBIdummy",
+                      "maizeqty",
+                      "HaricotQty",
+                      "Teffqty",
+                      "SorghumQty",
+                      "Wheatqty",
+                      "Barelyqty",
+                      "Cultlandsize10_a",
+                      "Iddir") 
 
-# Copy Data to Inputs
-write_csv(data, "2_Analysis//A_Input//Cleaned_Data.csv")
+  # Separate Dataset
+cf_data <- dplyr::select(data, relevant_columns)
+
+  # Format Outcome
+outcome <- as.matrix(cf_data$Uptake1dummy)
+
+  # Format Treatment
+treatment <- as.factor(cf_data$Randomization1)
+
+  # Format Covariates
+covariates <- as.matrix(data[,c("Age",
+                                "sex_dummy",
+                                "marriage_dummy",
+                                "saving_dummy",
+                                "Education",
+                                "Famsize",
+                                "FSevdrought",
+                                "buyIBIdummy",
+                                "maizeqty",
+                                "HaricotQty",
+                                "Teffqty",
+                                "SorghumQty",
+                                "Wheatqty",
+                                "Barelyqty",
+                                "Cultlandsize10_a")])
+
+  # Format Iddir Cluster as 
+cf_data$Iddir <- as.numeric(cf_data$Iddir)
 
 
-# Set Treatment Variable
-treatment <- "treatment_variable_name"
 
-# Set Outcome Variable
-outcome <- "Uptake1dummy"
+  # Run Multi-Arm Causal Model - Handles Multiple Treatments
+cf_multi <- multi_arm_causal_forest(covariates, outcome, treatment, cluster= cf_data$Iddir)
+  
+cf_predict <- predict(cf_multi)
 
-# Set covariates
-covariates <- c("covariate1", "covariate2", "covariate3")
+average_treatment_effect(cf_multi, method = "AIPW")
+summary(cf_multi)
+
 
 ## 3. Split Data ##############################################################
 

@@ -24,6 +24,7 @@ library(grf) # Fitting Causal Forest Package
 library(caret) # Machine Learning Package
 library(sandwich) # Standard Error Adjustment Package
 library(lmtest) # Regression Model Testing Package
+library(kableExtra)
 
 
 ## 2. Prepare Data ############################################################
@@ -102,10 +103,10 @@ summary(data$Iddir)
 # Table Results
 
   # Treatment Summary Statistics - Correct
-treatment_count <- data %>%
+treatment_count <- data %>% 
   group_by(Randomization1) %>%
-  summarise(Observations = n(),
-            Iddirs = n_distinct(iddir))
+  summarise(Observations = n_distinct(Identifier),
+            Iddir = n_distinct(iddir))
 
   # Balancing Tests
 
@@ -299,6 +300,7 @@ cf_multi <- multi_arm_causal_forest(covariates, outcome, treatment, cluster= cf_
   # Return Datapoints to Fit Model
 cf_predict <- predict(cf_multi)
 
+cf_predict_CATE <- predict(cf_multi, estimate_cate = TRUE)$predictions
 
 ## 3. Evaluate Model ##########################################################
 
@@ -306,10 +308,20 @@ cf_predict <- predict(cf_multi)
 # Estimate Average Treatment Effects and Error
 average_treatment_effect(cf_multi, method = "AIPW",) # AIPW is for doubly robust errors
 
+tune_pa(covariates, outcome, treatment, cluster= cf_data$Iddir)
 # Summary 
 summary(cf_multi)
 
-## 4. Plots and Graphs ########################################################
+
+## 4. Model Evaluation ########################################################
+
+  # Residual plot
+
+  # Variable Importance Plot
+
+  # Conditional Effect Plot
+
+## 5. Plots and Graphs ########################################################
 
 ## Script End #################################################################
 

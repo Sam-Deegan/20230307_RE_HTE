@@ -8,12 +8,13 @@
 
   # 1. Library Packages
   # 2. Prepare Data
-  # 3. ...
-  # 4. ...
-  # 5. ...
-  # 6. ...
-  # 7. ...
-  # 8. Plots and Graphs
+  # 3. Check Structure..
+  # 4. Randomisation
+  # 5. Balance Test 1
+  # 6. Balance Test 2
+  # 7. Insurance Uptake Rate
+  # 8. Default Rates
+  # 9. Plots and Graphs
 
 ## 1. Library Packages ########################################################
 
@@ -23,7 +24,7 @@ library(grf) # Fitting Causal Forest Package
 library(caret) # Machine Learning Package
 library(sandwich) # Standard Error Adjustment Package
 library(lmtest) # Regression Model Testing Package
-library(car) # 
+
 
 ## 2. Prepare Data ############################################################
 
@@ -215,9 +216,9 @@ summary(excl_DltMt_mdl)
 
 
 
-## 8. Plots and Graphs ########################################################
+## 8. Default Uptake Rates ####################################################
 
-## 8. Plots and Graphs ########################################################
+## 9. Plots and Graphs ########################################################
 
 
 ## B. Extension ###############################################################
@@ -231,13 +232,7 @@ summary(excl_DltMt_mdl)
   # 7. Evaluate Model
   # 8. Plots and Graphs
 
-## 1. Library Packages ########################################################
-
-library(tidyverse) # Data Manipulation Package
-library(grf) # Fitting Causal Forest Package
-library(caret) # Machine Learning Package
-
-## 2. Prepare Data ############################################################
+## 1. Prepare Data ############################################################
 
   # Relevant Variables
 relevant_columns <- c("Identifier",
@@ -296,44 +291,25 @@ covariates <- as.matrix(data[,c("Age",
   # Format Iddir Cluster as 
 cf_data$Iddir <- as.numeric(cf_data$Iddir)
 
-
+## 2. Fit Model  ##############################################################
 
   # Run Multi-Arm Causal Model - Handles Multiple Treatments
-cf_multi <- multi_arm_causal_forest(covariates, outcome, treatment, cluster= cf_data$Iddir)
-  
+cf_multi <- multi_arm_causal_forest(covariates, outcome, treatment, cluster= cf_data$Iddir,num.trees = 2000, seed =123)
+
+  # Return Datapoints to Fit Model
 cf_predict <- predict(cf_multi)
 
-average_treatment_effect(cf_multi, method = "AIPW")
-summary(cf_multi)
 
-
-## 3. Split Data ##############################################################
-
-# Set Seed for Reproducibility
-set.seed(123)
-
-# Split the Data
-data_split <- trainTestSplit(data, testFraction = 0.3)
-train_data <- data_split$train
-test_data <- data_split$test
-
-## 4. Fit Causal Forest Model #################################################
-
-# Fit the Causal Forest Model
-cf <- causal_forest(X = train_data[, covariates],
-                    Y = train_data[, outcome],
-                    W = train_data[, treatment])
-
-## 6. Calculate Average Treatment Effects #####################################
-
-# Predict Treatment Effects
-treatment_effects <- predict(cf, newdata = test_data[, covariates])
-
-## 7. Evaluate Model ##########################################################
+## 3. Evaluate Model ##########################################################
 
 # Calculate Average Treatment Effect
-ate <- mean(treatment_effects)
+# Estimate Average Treatment Effects and Error
+average_treatment_effect(cf_multi, method = "AIPW",) # AIPW is for doubly robust errors
 
-## 8. Plots and Graphs ########################################################
+# Summary 
+summary(cf_multi)
+
+## 4. Plots and Graphs ########################################################
 
 ## Script End #################################################################
+

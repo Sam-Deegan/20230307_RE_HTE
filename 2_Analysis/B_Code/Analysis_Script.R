@@ -24,7 +24,7 @@ library(grf) # Fitting Causal Forest Package
 library(caret) # Machine Learning Package
 library(sandwich) # Standard Error Adjustment Package
 library(lmtest) # Regression Model Testing Package
-library(kableExtra)
+library(kableExtra) # Create LaTeX tables
 
 
 ## 2. Prepare Data ############################################################

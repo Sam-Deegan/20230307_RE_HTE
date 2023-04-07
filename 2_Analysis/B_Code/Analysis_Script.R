@@ -25,7 +25,6 @@ library(sandwich) # Standard Error Adjustment Package
 library(lmtest) # Regression Model Testing Package
 library(kableExtra) # Create LaTeX tables
 library(broom)
-
 options(scipen = 999)
 ## 2. Prepare Data ############################################################
 
@@ -37,11 +36,6 @@ data <- readRDS(file.path("1_Build//C_Output//Cleaned_Data.rds"))
 write_csv(data, "2_Analysis//A_Input//Cleaned_Data.csv")
 
 ## 3. Check Structure #########################################################
-
-treatment_count_2 <- data %>% 
-  group_by(Randomization1) %>%
-  summarise(Observations = n_distinct(Identifier),
-            Iddir = n_distinct(Iddir)) 
 
 # Consider moving formatting to Build file to tidy up analysis. 
 
@@ -59,10 +53,6 @@ data <- data %>%
 
 levels(data$Randomization1)
 
-treatment_count_3 <- data %>% 
-  group_by(Randomization1) %>%
-  summarise(Observations = n_distinct(Identifier),
-            Iddir = n_distinct(Iddir))
 
 # Specify "Standard Insurance (coops)" as the reference level (=0)
 data$Randomization1 <- factor(data$Randomization1, levels = c("standard insurance through the usual channel (coops)", 
@@ -72,10 +62,22 @@ data$Randomization1 <- factor(data$Randomization1, levels = c("standard insuranc
                                                               "IOU insurance through the usual channel with BC",
                                                               "IOU insurance through usual channel without BC"))
 
-treatment_count_3 <- data %>% 
-  group_by(Randomization1) %>%
-  summarise(Observations = n_distinct(Identifier),
-            Iddir = n_distinct(Iddir))
+# Specify factors levels to match Randomization
+data$Uptake1 <- factor(data$Uptake1, levels = c("standard insurance through the usual channel (coops)", 
+                                                              "Standard insurance through iddirs", 
+                                                              "IOU insurance through iddirs with BC",
+                                                              "IOU insurance through iddirs without BC",
+                                                              "IOU insurance through the usual channel (coops) with BC",
+                                                              "IOU insurance through usual channel (coops) without BC",
+                                                              "Non-buyer"))
+# Adjust names to match Randomization 1
+levels(data$Uptake1) <- c("standard insurance through the usual channel (coops)",
+                          "Standard insurance through iddirs", 
+                          "IOU insurance through iddirs with BC",
+                          "IOU insurance through iddirs without BC",
+                          "IOU insurance through the usual channel with BC",
+                          "IOU insurance through usual channel without BC",
+                          "Non-buyer")
 
 levels(data$Randomization1)
 
@@ -97,10 +99,14 @@ data$Famsize <- as.numeric(as.character(data$Famsize))
 # Create Treatment Dummies  "Standard Insurance (coops)" set as 0
 treatment_dummy <- model.matrix(~ Randomization1 - 1, data = data)
 
+levels(data$Uptake1)
+uptake_dummy <- model.matrix(~ Uptake1 - 1, data = data)
+
 # Combine Data and Dummies
 data <- cbind(data, treatment_dummy)
+data <- cbind(data, uptake_dummy)
 
-# Rename Treatment Dummies
+# Rename Randomization Dummies
 data <- data %>%
   rename(Dum_Insrnce_Stndrd = "Randomization1standard insurance through the usual channel (coops)", 
          Dum_Insrnce_Iddr = "Randomization1Standard insurance through iddirs",
@@ -109,12 +115,18 @@ data <- data %>%
          Dum_IOU_BC = "Randomization1IOU insurance through the usual channel with BC",
          Dum_IOU = "Randomization1IOU insurance through usual channel without BC")
 
+# Rename Treatment Dummies
+data <- data %>%
+  rename(Dum_Trt_Insrnce_Stndrd = "Uptake1standard insurance through the usual channel (coops)", 
+         Dum_Trt_Insrnce_Iddr = "Uptake1Standard insurance through iddirs",
+         Dum_Trt_IOU_Iddr_BC = "Uptake1IOU insurance through iddirs with BC",
+         Dum_Trt_IOU_Iddr = "Uptake1IOU insurance through iddirs without BC",
+         Dum_Trt_IOU_BC = "Uptake1IOU insurance through the usual channel with BC",
+         Dum_Trt_IOU = "Uptake1IOU insurance through usual channel without BC",
+         Dum_Trt_NB = "Uptake1Non-buyer")
+
 # Summary Statistics
-
-summary(data$Iddir)
-
-
-treatment_count_4 <- data %>% 
+treatment_count <- data %>% 
   group_by(Randomization1) %>%
   summarise(Observations = n_distinct(Identifier),
             Iddir = n_distinct(iddir)) 
@@ -367,33 +379,120 @@ table_1bb <- w_results_1b %>%
   select(-wald_combinations, starts_with("coefficients_")) %>% 
   round(2)
 
-kable(combined_tidy_model_summaries)
 
 ## 7. Insurance Uptake Rates ##################################################
 
-# To Do:
-  # Wald Tests
-  # Table Results
+
+  # Uptake regressions
+uptk_rt_1 <- lm(Dum_Trt_Insrnce_Stndrd ~ Dum_Insrnce_Stndrd, data)
+uptk_rt_2 <- lm(Dum_Trt_Insrnce_Iddr ~ Dum_Insrnce_Iddr, data)
+uptk_rt_3 <- lm(Dum_Trt_IOU_Iddr_BC ~ Dum_IOU_Iddr_BC, data)
+uptk_rt_4 <- lm(Dum_Trt_IOU_Iddr ~ Dum_IOU_Iddr, data)
+uptk_rt_5 <- lm(Dum_Trt_IOU_BC ~ Dum_IOU_BC, data)
+uptk_rt_6 <- lm(Dum_Trt_IOU ~ Dum_IOU, data)
+
+# Compute robust clustered errors
+uptk_rt_c1 <- vcovHC(uptk_rt_1, cluster="Iddir")
+uptk_rt_c2 <- vcovHC(uptk_rt_2, cluster="Iddir")
+uptk_rt_c3 <- vcovHC(uptk_rt_3, cluster="Iddir")
+uptk_rt_c4 <- vcovHC(uptk_rt_4, cluster="Iddir")
+uptk_rt_c5 <- vcovHC(uptk_rt_5, cluster="Iddir")
+uptk_rt_c6 <- vcovHC(uptk_rt_6, cluster="Iddir")
+
+# Extract coefficient estimates and confidence intervals for the first coefficient of each model
+uptk_rt_1a <- confint(coeftest(uptk_rt_1, uptk_rt_c1))[2,]
+uptk_rt_2a <- confint(coeftest(uptk_rt_2, uptk_rt_c2))[2,]
+uptk_rt_3a <- confint(coeftest(uptk_rt_3, uptk_rt_c3))[2,]
+uptk_rt_4a <- confint(coeftest(uptk_rt_4, uptk_rt_c4))[2,]
+uptk_rt_5a <- confint(coeftest(uptk_rt_5, uptk_rt_c5))[2,]
+uptk_rt_6a <- confint(coeftest(uptk_rt_6, uptk_rt_c6))[2,]
+
+# Create a data frame with coefficient estimates and confidence intervals for each regression model
+figure_2_df <- data.frame(Model=c("Index\nInsurance", "Index Insurance\nvia Iddir", "IOU via Iddir\nwith Contract", "IOU via\nIddir", "IOU with\nContract", "IOU"),
+                 Estimate=c(coef(uptk_rt_1)[2], coef(uptk_rt_2)[2], coef(uptk_rt_3)[2], coef(uptk_rt_4)[2], coef(uptk_rt_5)[2], coef(uptk_rt_6)[2]),
+                 LowerCI=c(uptk_rt_1a[2], uptk_rt_2a[2], uptk_rt_3a[2], uptk_rt_4a[2], uptk_rt_5a[2], uptk_rt_6a[2]),
+                 UpperCI=c(uptk_rt_1a[1], uptk_rt_2a[1], uptk_rt_3a[1], uptk_rt_4a[1], uptk_rt_5a[1], uptk_rt_6a[1]))
+
+# Plot bar graph with error bars
+figure_2 <- ggplot(figure_2_df, aes(x=Model, y=Estimate)) +
+  geom_bar(stat="identity", fill="gray50") +
+  geom_errorbar(aes(ymin=LowerCI, ymax=UpperCI), width=.2, position=position_dodge(.9)) +
+  labs(x="Randomisation", y="Coefficient Estimate (%)", 
+       title="Mean of the First Coefficient with 95% Confidence Intervals") + 
+  theme_classic() 
+
+  # Cross-Tabulation of Treatment-uptake. Compilers on diagonal 
+cross_tab <- data %>% 
+  select(Randomization1, Uptake1) %>% 
+  count(Randomization1, Uptake1) %>% 
+  pivot_wider(names_from =Randomization1, values_from = n, values_fill= 0) %>%
+  arrange(Uptake1)
+
+# Identify common levels between Randomization1 and Uptake1
+common_levels <- intersect(levels(data$Randomization1), levels(data$Uptake1))
+
+data %>% 
+  select(Randomization1, Uptake1, Iddir) %>% 
+  group_by(Randomization1) %>%
+  summarise(match_pct = sum(as.character(Randomization1) == as.character(Uptake1)) / n() * 100) %>%
+  ungroup() 
+
+# Models
 
   # Parsimonious Model 
 prsmns_mdl  <- lm(Uptake1dummy ~ Dum_Insrnce_Iddr + Dum_IOU_Iddr_BC + Dum_IOU_Iddr + Dum_IOU_BC + Dum_IOU, data = data)
-prsmns_se <- sqrt(diag(vcovCL(prsmns_mdl, cluster = data$iddir)))
-summary(prsmns_mdl)
+prsmns_se <- vcovCL(prsmns_mdl, cluster = data$Iddir)
+excl_DltMt_mdl_2 <- coeftest(prsmns_mdl, prsmns_se)
 
   # Additional Model 
 addtnl_mdl  <- lm(Uptake1dummy ~ Dum_Insrnce_Iddr + Dum_IOU_Iddr_BC + Dum_IOU_Iddr + Dum_IOU_BC + Dum_IOU + Age + sex_dummy + marriage_dummy + Education + Famsize + TincomelastMnth + FSevdrought + buyIBIdummy + maizeqty + HaricotQty + Teffqty + SorghumQty + Wheatqty + Barelyqty + Cultlandsize10_a + saving_dummy + factor(Kebele), data = data)
-addtnl_se <- sqrt(diag(vcovCL(addtnl_mdl, cluster = data$iddir)))
-summary(addtnl_mdl)
+addtnl_se <- vcovCL(addtnl_mdl, cluster = data$Iddir)
+addtnl_mdl_2  <- coeftest(addtnl_mdl, addtnl_se)
 
   # Excluding Daloti #Mati
 
 data_filtered <- data %>% filter(Kebele != "Dalota Mati")
+excl_DltMt_mdl <- lm(Uptake1dummy ~ Dum_Insrnce_Iddr + Dum_IOU_Iddr_BC + Dum_IOU_Iddr + Dum_IOU_BC + Dum_IOU + Age + sex_dummy + marriage_dummy + Education + Famsize + TincomelastMnth + FSevdrought + buyIBIdummy + maizeqty + HaricotQty + Teffqty + SorghumQty + Wheatqty + Barelyqty + Cultlandsize10_a + saving_dummy + factor(Kebele), data = data_filtered)
+excl_DltMt_se <-vcovCL(excl_DltMt_mdl, cluster = data_filtered$Iddir)
+excl_DltMt_mdl_2  <- coeftest(excl_DltMt_mdl, excl_DltMt_se)
 
-  # Additional Model  
-excl_DltMt_mdl <- lm(Uptake1dummy ~ Dum_Insrnce_Iddr + Dum_IOU_Iddr_BC + Dum_IOU_Iddr + Dum_IOU_BC + Dum_IOU + Age + sex_dummy + marriage_dummy + Education + Famsize + TincomelastMnth + FSevdrought + buyIBIdummy + maizeqty + HaricotQty + Teffqty + SorghumQty + Wheatqty + Barelyqty + Cultlandsize10_a + saving_dummy + factor(Kebele), data = data)
-excl_DltMt_se <- sqrt(diag(vcovCL(addtnl_mdl, cluster = data$iddir)))
-summary(excl_DltMt_mdl)
 
+
+# Wald Tests Model prsmns_mdl
+mdl_1_w1 <- waldtest(prsmns_mdl, vcov = vcovHC(prsmns_mdl, cluster = "Iddir"), c("Dum_Insrnce_Iddr", "Dum_IOU"))
+mdl_1_w2 <- waldtest(prsmns_mdl, vcov = vcovHC(prsmns_mdl, cluster = "Iddir"), c("Dum_Insrnce_Iddr", "Dum_IOU_BC"))
+mdl_1_w3 <- waldtest(prsmns_mdl, vcov = vcovHC(prsmns_mdl, cluster = "Iddir"), c("Dum_Insrnce_Iddr", "Dum_IOU_Iddr"))
+mdl_1_w4 <- waldtest(prsmns_mdl, vcov = vcovHC(prsmns_mdl, cluster = "Iddir"), c("Dum_Insrnce_Iddr", "Dum_IOU_Iddr_BC"))
+mdl_1_w5 <- waldtest(prsmns_mdl, vcov = vcovHC(prsmns_mdl, cluster = "Iddir"), c("Dum_IOU", "Dum_IOU_BC"))
+mdl_1_w6 <- waldtest(prsmns_mdl, vcov = vcovHC(prsmns_mdl, cluster = "Iddir"), c("Dum_IOU", "Dum_IOU_Iddr"))
+mdl_1_w7 <- waldtest(prsmns_mdl, vcov = vcovHC(prsmns_mdl, cluster = "Iddir"), c("Dum_IOU", "Dum_IOU_Iddr_BC"))
+mdl_1_w8 <- waldtest(prsmns_mdl, vcov = vcovHC(prsmns_mdl, cluster = "Iddir"), c("Dum_IOU_BC", "Dum_IOU_Iddr"))
+mdl_1_w9 <- waldtest(prsmns_mdl, vcov = vcovHC(prsmns_mdl, cluster = "Iddir"), c("Dum_IOU_BC", "Dum_IOU_Iddr_BC"))
+mdl_1_w10 <- waldtest(prsmns_mdl, vcov = vcovHC(prsmns_mdl, cluster = "Iddir"), c("Dum_IOU_Iddr", "Dum_IOU_Iddr_BC"))
+
+# Wald Tests Model addtnl_mdl
+md2_1_w1 <- waldtest(addtnl_mdl, vcov = vcovHC(addtnl_mdl, cluster = "Iddir"), c("Dum_Insrnce_Iddr", "Dum_IOU"))
+md2_1_w2 <- waldtest(addtnl_mdl, vcov = vcovHC(addtnl_mdl, cluster = "Iddir"), c("Dum_Insrnce_Iddr", "Dum_IOU_BC"))
+md2_1_w3 <- waldtest(addtnl_mdl, vcov = vcovHC(addtnl_mdl, cluster = "Iddir"), c("Dum_Insrnce_Iddr", "Dum_IOU_Iddr"))
+md2_1_w4 <- waldtest(addtnl_mdl, vcov = vcovHC(addtnl_mdl, cluster = "Iddir"), c("Dum_Insrnce_Iddr", "Dum_IOU_Iddr_BC"))
+md2_1_w5 <- waldtest(addtnl_mdl, vcov = vcovHC(addtnl_mdl, cluster = "Iddir"), c("Dum_IOU", "Dum_IOU_BC"))
+md2_1_w6 <- waldtest(addtnl_mdl, vcov = vcovHC(addtnl_mdl, cluster = "Iddir"), c("Dum_IOU", "Dum_IOU_Iddr"))
+md2_1_w7 <- waldtest(addtnl_mdl, vcov = vcovHC(addtnl_mdl, cluster = "Iddir"), c("Dum_IOU", "Dum_IOU_Iddr_BC"))
+md2_1_w8 <- waldtest(addtnl_mdl, vcov = vcovHC(addtnl_mdl, cluster = "Iddir"), c("Dum_IOU_BC", "Dum_IOU_Iddr"))
+md2_1_w9 <- waldtest(addtnl_mdl, vcov = vcovHC(addtnl_mdl, cluster = "Iddir"), c("Dum_IOU_BC", "Dum_IOU_Iddr_BC"))
+md2_1_w10 <- waldtest(addtnl_mdl, vcov = vcovHC(addtnl_mdl, cluster = "Iddir"), c("Dum_IOU_Iddr", "Dum_IOU_Iddr_BC"))
+
+# Wald Tests Model excl_DltMt_mdl
+md3_1_w1 <- waldtest(excl_DltMt_mdl, vcov = vcovHC(excl_DltMt_mdl, cluster = "Iddir"), c("Dum_Insrnce_Iddr", "Dum_IOU"))
+md3_1_w2 <- waldtest(excl_DltMt_mdl, vcov = vcovHC(excl_DltMt_mdl, cluster = "Iddir"), c("Dum_Insrnce_Iddr", "Dum_IOU_BC"))
+md3_1_w3 <- waldtest(excl_DltMt_mdl, vcov = vcovHC(excl_DltMt_mdl, cluster = "Iddir"), c("Dum_Insrnce_Iddr", "Dum_IOU_Iddr"))
+md3_1_w4 <- waldtest(excl_DltMt_mdl, vcov = vcovHC(excl_DltMt_mdl, cluster = "Iddir"), c("Dum_Insrnce_Iddr", "Dum_IOU_Iddr_BC"))
+md3_1_w5 <- waldtest(excl_DltMt_mdl, vcov = vcovHC(excl_DltMt_mdl, cluster = "Iddir"), c("Dum_IOU", "Dum_IOU_BC"))
+md3_1_w6 <- waldtest(excl_DltMt_mdl, vcov = vcovHC(excl_DltMt_mdl, cluster = "Iddir"), c("Dum_IOU", "Dum_IOU_Iddr"))
+md3_1_w7 <- waldtest(excl_DltMt_mdl, vcov = vcovHC(excl_DltMt_mdl, cluster = "Iddir"), c("Dum_IOU", "Dum_IOU_Iddr_BC"))
+md3_1_w8 <- waldtest(excl_DltMt_mdl, vcov = vcovHC(excl_DltMt_mdl, cluster = "Iddir"), c("Dum_IOU_BC", "Dum_IOU_Iddr"))
+md3_1_w9 <- waldtest(excl_DltMt_mdl, vcov = vcovHC(excl_DltMt_mdl, cluster = "Iddir"), c("Dum_IOU_BC", "Dum_IOU_Iddr_BC"))
+md3_1_w10 <- waldtest(excl_DltMt_mdl, vcov = vcovHC(excl_DltMt_mdl, cluster = "Iddir"), c("Dum_IOU_Iddr", "Dum_IOU_Iddr_BC"))
 
 
 ## 8. Default Uptake Rates ####################################################
@@ -401,23 +500,27 @@ summary(excl_DltMt_mdl)
 ## 9. Plots and Graphs ########################################################
 
 # Table 0 Observation and Iddirs
-
 treatment_count
 
 # Table 1a Balancing Test 1: Regressions 
-
 table_1aa
 
 # Table 1b Balancing Test 1: Wald
-
 table_1ab
-# Table 2a Balancing Test 2: Regressions 
 
+# Table 2a Balancing Test 2: Regressions 
 table_1ba 
 
 # Table 2b Balancing Test 2: Wald
-
 table_1bb
+
+# Additional: Cross-Tabulation of Treatment-uptake. Compliers on diagonal
+cross_tab 
+
+# Figure 2
+figure_2
+
+
 
 
 ## B. Extension ###############################################################

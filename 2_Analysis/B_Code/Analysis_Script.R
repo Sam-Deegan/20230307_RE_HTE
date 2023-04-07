@@ -376,7 +376,6 @@ table_1bb <- w_results_1b %>%
   select(-wald_combinations, starts_with("coefficients_")) %>% 
   round(2)
 
-kable(combined_tidy_model_summaries)
 
 ## 7. Insurance Uptake Rates ##################################################
 

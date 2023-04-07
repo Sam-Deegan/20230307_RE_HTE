@@ -125,7 +125,6 @@ C5. Challenges and Limitations: In this subsection, we discuss any challenges fa
 When checking the dataset we obtained from the official resource, we found that the numbers of \textit{Iddirs} of three groups---IBI, IOU and IOU_C, are much larger than the results in the original paper, while the total number of \textit{Iddirs} and the numbers of observations of all groups are consistent. The original paper does not explain whether/how they recategorise the households into new \textit{Iddirs}. Due to this ambiguity, our randomisation does not work as well as that of the original study.
 
 
-
 \section{Results}
 
 \begin{itemize}

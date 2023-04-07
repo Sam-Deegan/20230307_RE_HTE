@@ -45,10 +45,6 @@ treatment_count_2 <- data %>%
 
 # Consider moving formatting to Build file to tidy up analysis. 
 
-treatment_count_3 <- data %>% 
-  group_by(Randomization1) %>%
-  summarise(Observations = n_distinct(Identifier),
-            Iddir = n_distinct(Iddir, na.rm=TRUE))
 # Check Data Structure
 str(data)
 
@@ -126,8 +122,16 @@ treatment_count_4 <- data %>%
 ## 4.Randomisation ############################################################
 
 # To Do:
-  # Replication Problem 1: Iddir numbers per category do not match with the Section 3 Randomisation
+  # Replication Problem 1: Iddir numbers per category do not match with the Section 3 Randomization
     # Observation numbers correct
+    # Iddir and iddir are off slightly. Should match exactly
+    # Randomization should align with Iddir level. 1 per Iddir not the case
+    # Checked analysis script not jumbling factor levels. 
+    # Checked cleaning script nothing jumbling the data
+    # Checked input data, problem is in the dataset
+    # Downloaded data again, problem persists. 
+    # Downloaded data from different source. Same problem
+    # Contacted author to see if we can get a clean copy
 
 # Table Results
 
@@ -155,10 +159,10 @@ treatment_count <- data %>%
 
 # Balance Test 1a 
 
-# Regress Socio-Economic Variable on Treatment - Correct
-
+  # List y variable for purr
 outcomes <- c("Age", "sex_dummy", "marriage_dummy", "Education", "Famsize", "TincomelastMnth", "FSevdrought", "buyIBIdummy")
 
+  # List covariates for purr
 covariates <- c("Dum_Insrnce_Iddr", "Dum_IOU_Iddr_BC", "Dum_IOU_Iddr", "Dum_IOU_BC", "Dum_IOU")
 
 wald_combinations <- list(c("Dum_Insrnce_Iddr", "Dum_IOU"),
@@ -172,8 +176,10 @@ wald_combinations <- list(c("Dum_Insrnce_Iddr", "Dum_IOU"),
                           c("Dum_IOU_BC", "Dum_IOU_Iddr_BC"),
                           c("Dum_IOU_Iddr", "Dum_IOU_Iddr_BC"))
 
+  # Create balancing table list
 balancing_test_1a <- list()
 
+  # Create Wald test list
 wald_test_1a <- list()
 
 # Create an empty list to store the model summaries
@@ -186,18 +192,24 @@ balancing_test_1a <- map(outcomes, function(outcomes) {
   
   # Run the regression model
   model <- lm(formula, data = data)
+
   
-  # Run wald test
+  # Loop through wald combinations using purr and map wald results to list
   wald_test_1a <- map(wald_combinations, function(wald_combinations) {
     
+    # Wald test
     wald_test <- waldtest(model, vcov = vcovHC(model, cluster = "iddir"), paste(wald_combinations))
     
+    # Extract F-value
     w_coefficients <- na.omit(wald_test$"Pr(>F)")
     
+    # Save coefficients as dataframe
     w_coefficients_df <- as.data.frame(w_coefficients)
-    
+
+    # Save Wald combinations as column   
     w_coefficients_df$wald_combinations <- list(paste(wald_combinations, collapse = "_"))
     
+    # Save Column reference as column
     w_coefficients_df$outcomes <- outcomes
     
     return(w_coefficients_df)                                  
@@ -222,63 +234,93 @@ balancing_test_1a <- map(outcomes, function(outcomes) {
   list(model_summary = model_summary, w_results_df = w_results_df)
 })
 
-
-
-# Combine the model summaries and wald test results into separate lists
+  # Combine the model summaries and wald test results into separate lists
 model_summaries_1a <- map(balancing_test_1a, function(x) x$model_summary)
 w_results_list_1a <- map(balancing_test_1a, function(x) x$w_results_df)
 
-# Combine the wald test results into a single data frame
+  # Combine the wald test results into a single data frame
 model_1a <- bind_rows(lapply(model_summaries_1a, tidy), .id= "model.id")
 w_results_1a <- bind_rows(w_results_list_1a)
 
 
+  #Clean up redundant objects
 rm(model_summaries_1a,model_summaries, wald_test_1a, w_results_list_1a)
-
 
 head(w_results_1a)
 
-# Assuming the data frame is called w_results_df
+## Balancing Tables
+
+# Balancing Table 1a
+table_1aa <- model_1a %>%
+  select(-c(std.error, statistic)) %>%
+  pivot_longer(cols = c(estimate, p.value), names_to = "variable", values_to = "value") %>%
+  pivot_wider(names_from = "model.id", values_from = "value") %>%
+  mutate_at(vars(-c(term, variable)), ~round(., digits = 3)) %>% 
+  rename_with(~outcomes, 3:10)
+ 
+# Balancing Table 1b
 table_1ab <- w_results_1a %>%
   select(wald_combinations, everything()) %>% 
   pivot_wider(names_from = outcomes, values_from = w_coefficients) %>% 
   select(-wald_combinations, starts_with("coefficients_")) %>% 
   round(2)
 
+## 6. Balance Test 1b ##########################################################
 
+# To Do:
+# Wald Tests
+# Table Results
 
+# Balance Test 1b
+colnames(data)
 
+# List of outcome variables for purr
+outcomes <- c("maizeqty", "HaricotQty", "Teffqty", "SorghumQty", "Wheatqty", "Barelyqty", "Cultlandsize10_a", "HaveSaving12_a")
 
+# Loop through the list of outcomes and convert corresponding columns in df to numeric
+data[outcomes] <- map_dfc(data[outcomes], as.numeric)
 
+# Create balancing table list
+balancing_test_1a <- list()
 
+# Create Wald test list
+wald_test_1a <- list()
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+# Create an empty list to store the model summaries
+model_summaries <- list()
 
 # Loop through the outcome variable variables using purrr and map regression result to list 
-balancing_test_1a <- map(outcomes, function(outcomes) {
+balancing_test_1b <- map(outcomes, function(outcomes) {
   # Define your formula
   formula <- paste(outcomes, "~", paste(covariates, collapse = "+"))
   
   # Run the regression model
   model <- lm(formula, data = data)
+  
+  
+  # Loop through wald combinations using purr and map wald results to list
+  wald_test_1b <- map(wald_combinations, function(wald_combinations) {
+    
+    # Wald test
+    wald_test <- waldtest(model, vcov = vcovHC(model, cluster = "iddir"), paste(wald_combinations))
+    
+    # Extract F-value
+    w_coefficients <- na.omit(wald_test$"Pr(>F)")
+    
+    # Save coefficients as dataframe
+    w_coefficients_df <- as.data.frame(w_coefficients)
+    
+    # Save Wald combinations as column   
+    w_coefficients_df$wald_combinations <- list(paste(wald_combinations, collapse = "_"))
+    
+    # Save Column reference as column
+    w_coefficients_df$outcomes <- outcomes
+    
+    return(w_coefficients_df)                                  
+  })
+  
+  # Save the wald test result for this outcome in wald_test_1b list
+  w_results_df <- bind_rows(wald_test_1b)
   
   # Extract the summary of the model
   model_summary <- summary(model)
@@ -292,187 +334,40 @@ balancing_test_1a <- map(outcomes, function(outcomes) {
   # Add the y variable name to the data frame
   coefficients_df$outcomes <- outcomes
   
-  # Run wald test
-  wald_test_1a <- map(wald_combinations, function(wald_combinations) {
-    
-    wald_test <- waldtest(model, vcov = vcovHC(model, cluster = "iddir"), c(wald_combinations))
-    
-    w_coefficients <- na.omit(wald_test$"Pr(>F)")
-    
-    w_coefficients_df <- as.data.frame(w_coefficients)
-      
-    w_coefficients_df$wald_combinations <- list(paste(wald_combinations, collapse = "_"))
-    
-    w_coefficients_df$outcomes <- outcomes
-    
-    return(w_coefficients_df)                                  
-  })
-  
-  # Save the wald test result for this outcome in wald_test_1a list
-  w_results_df <- bind_rows(wald_test_1a)
-  
-  return(w_results_df)
-  
-  # Return the data frame
-  return(coefficients_df)
+  # Return the data frames
+  list(model_summary = model_summary, w_results_df = w_results_df)
 })
 
-# Combine the results into a single data frame
-results_df <- bind_rows(balancing_test_1a)
+# Combine the model summaries and wald test results into separate lists
+model_summaries_1b <- map(balancing_test_1b, function(x) x$model_summary)
+w_results_list_1b <- map(balancing_test_1b, function(x) x$w_results_df)
 
-head(balancing_test_1a)
-head(results_df)
-# Apply Wald test to each model from previous loop
-
-wald_test_1a <- map(balancing_test_1a, function(bal_test) {
-  map(wald_combinations, function(wald_comb) {
-    # Extract the formula and data from bal_test
-    formula <- bal_test$formula
-    data <- bal_test$data
-    
-    # Fit the model
-    model <- lm(formula, data)
-    
-    # Apply the Wald test
-    wald_test <- waldtest(model, vcov = vcovHC(model, cluster = "iddir"), wald_comb)
-    wald_summary <- summary(wald_test)
-    coefficients <- wald_summary$coefficients
-    return(coefficients)
-  })
-})
+# Combine the wald test results into a single data frame
+model_1b <- bind_rows(lapply(model_summaries_1b, tidy), .id= "model.id")
+w_results_1b <- bind_rows(w_results_list_1b)
 
 
-wald_combinations <- list(c("Dum_Insrnce_Iddr", "Dum_IOU"),
-                          c("Dum_Insrnce_Iddr", "Dum_IOU_BC"),
-                          c("Dum_Insrnce_Iddr", "Dum_IOU_Iddr"),
-                          c("Dum_Insrnce_Iddr", "Dum_IOU_Iddr_BC"),
-                          c("Dum_IOU", "Dum_IOU_BC"),
-                          c("Dum_IOU", "Dum_IOU_Iddr"),
-                          c("Dum_IOU", "Dum_IOU_Iddr_BC"),
-                          c("Dum_IOU_BC", "Dum_IOU_Iddr"),
-                          c("Dum_IOU_BC", "Dum_IOU_Iddr_BC"),
-                          c("Dum_IOU_Iddr", "Dum_IOU_Iddr_BC"))
+#Clean up redundant objects
+rm(model_summaries_1b,model_summaries, wald_test_1b, w_results_list_1b)
 
+## Balancing Tables
 
-  
-out_bal_1_var_1 <- lm(Age ~ Dum_Insrnce_Iddr + Dum_IOU_Iddr_BC + Dum_IOU_Iddr + Dum_IOU_BC + Dum_IOU, data = data)
+  # Balancing Table 2a
+table_1ba <- model_1b %>%
+  select(-c(std.error, statistic)) %>%
+  pivot_longer(cols = c(estimate, p.value), names_to = "variable", values_to = "value") %>%
+  pivot_wider(names_from = "model.id", values_from = "value") %>%
+  mutate_at(vars(-c(term, variable)), ~round(., digits = 3)) %>% 
+  rename_with(~outcomes, 3:10)
 
-# Run wald test
-wald_test_1a <- map(wald_combinations, function(wald_combinations) {
-  
-  wald_test <- waldtest(out_bal_1_var_1 , vcov = vcovHC(out_bal_1_var_1, cluster = "iddir"), c(wald_combinations))
-  
-  w_coefficients <- wald_test$"Pr(>F)"
-  
-  wald_test$out_bal_1_var_1 <- paste(wald_combinations, collapse = "_")
+  # Balancing Table 2b
+table_1bb <- w_results_1b %>%
+  select(wald_combinations, everything()) %>% 
+  pivot_wider(names_from = outcomes, values_from = w_coefficients) %>% 
+  select(-wald_combinations, starts_with("coefficients_")) %>% 
+  round(2)
 
-  return(w_coefficients)                                  
-})
-out_bal_1_var_1 <- lm(Age ~ Dum_Insrnce_Iddr + Dum_IOU_Iddr_BC + Dum_IOU_Iddr + Dum_IOU_BC + Dum_IOU, data = data)
-out_bal_1_var_2 <- lm(sex_dummy ~ Dum_Insrnce_Iddr + Dum_IOU_Iddr_BC + Dum_IOU_Iddr + Dum_IOU_BC + Dum_IOU, data = data)
-out_bal_1_var_3 <- lm(marriage_dummy ~ Dum_Insrnce_Iddr + Dum_IOU_Iddr_BC + Dum_IOU_Iddr + Dum_IOU_BC + Dum_IOU, data = data)
-out_bal_1_var_4 <- lm(Education ~ Dum_Insrnce_Iddr + Dum_IOU_Iddr_BC + Dum_IOU_Iddr + Dum_IOU_BC + Dum_IOU, data = data)
-out_bal_1_var_5 <- lm(Famsize ~ Dum_Insrnce_Iddr + Dum_IOU_Iddr_BC + Dum_IOU_Iddr + Dum_IOU_BC + Dum_IOU, data = data)
-out_bal_1_var_6 <- lm(TincomelastMnth ~ Dum_Insrnce_Iddr + Dum_IOU_Iddr_BC + Dum_IOU_Iddr + Dum_IOU_BC + Dum_IOU, data = data)
-out_bal_1_var_7 <- lm(FSevdrought ~ Dum_Insrnce_Iddr + Dum_IOU_Iddr_BC + Dum_IOU_Iddr + Dum_IOU_BC + Dum_IOU, data = data)
-out_bal_1_var_8 <- lm(buyIBIdummy ~ Dum_Insrnce_Iddr + Dum_IOU_Iddr_BC + Dum_IOU_Iddr + Dum_IOU_BC + Dum_IOU, data = data)
-
-# Robust Cluster rrors by Iddir - Correct
-se_1a_1 <- sqrt(diag(vcovCL(out_bal_1_var_1, cluster = data$iddir)))
-se_1a_2 <- sqrt(diag(vcovCL(out_bal_1_var_2, cluster = data$iddir)))
-se_1a_3 <- sqrt(diag(vcovCL(out_bal_1_var_3, cluster = data$iddir)))
-se_1a_4 <- sqrt(diag(vcovCL(out_bal_1_var_4, cluster = data$iddir)))
-se_1a_5 <- sqrt(diag(vcovCL(out_bal_1_var_5, cluster = data$iddir)))
-se_1a_6 <- sqrt(diag(vcovCL(out_bal_1_var_6, cluster = data$iddir)))
-se_1a_7 <- sqrt(diag(vcovCL(out_bal_1_var_7, cluster = data$iddir)))
-se_1a_8 <- sqrt(diag(vcovCL(out_bal_1_var_8, cluster = data$iddir)))
-
-
-# List Wald Test Combinations
-wald_combinations <- list(c("Dum_Insrnce_Iddr", "Dum_IOU"),
-                          c("Dum_Insrnce_Iddr", "Dum_IOU_BC"),
-                          c("Dum_Insrnce_Iddr", "Dum_IOU_Iddr"),
-                          c("Dum_Insrnce_Iddr", "Dum_IOU_Iddr_BC"),
-                          c("Dum_IOU", "Dum_IOU_BC"),
-                          c("Dum_IOU", "Dum_IOU_Iddr"),
-                          c("Dum_IOU", "Dum_IOU_Iddr_BC"),
-                          c("Dum_IOU_BC", "Dum_IOU_Iddr"),
-                          c("Dum_IOU_BC", "Dum_IOU_Iddr_BC"),
-                          c("Dum_IOU_Iddr", "Dum_IOU_Iddr_BC"))
-
-test_results <- list()
-for (vec in wald_combinations) {
-  test <- waldtest(out_bal_1_var_1, vcov = vcovHC(out_bal_1_var_1, cluster = "iddir"), vec)
-  name <- paste(vec, collapse = "_")
-  
-  # Create a new list for the test results of this combination
-  this_result <- list(name = name, test = test)
-  
-  # Append the new list to the test_results list
-  test_results <- c(test_results, list(this_result))
-}
-wald_combinations$
-Wld_test_1b_var_1_wld1 <- waldtest(out_bal_1_var_1, vcov = vcovHC(out_bal_1_var_1, cluster = "iddir"), c("Dum_Insrnce_Iddr", "Dum_IOU"))
-Wld_test_1b_var_1_wld2 <- waldtest(model, vcov = vcovHC(model, cluster = "iddir"), c("Dum_Insrnce_Iddr", "Dum_IOU_BC"))
-Wld_test_1b_var_1_wld3 <- waldtest(model, vcov = vcovHC(model, cluster = "iddir"), c("Dum_Insrnce_Iddr", "Dum_IOU_Iddr"))
-Wld_test_1b_var_1_wld4 <- waldtest(model, vcov = vcovHC(model, cluster = "iddir"), c("Dum_Insrnce_Iddr", "Dum_IOU_Iddr_BC"))
-Wld_test_1b_var_1_wld5 <- waldtest(model, vcov = vcovHC(model, cluster = "iddir"), c("Dum_IOU", "Dum_IOU_BC"))
-Wld_test_1b_var_1_wld6 <- waldtest(model, vcov = vcovHC(model, cluster = "iddir"), c("Dum_IOU", "Dum_IOU_Iddr"))
-Wld_test_1b_var_1_wld7 <- waldtest(model, vcov = vcovHC(model, cluster = "iddir"), c("Dum_IOU", "Dum_IOU_Iddr_BC"))
-Wld_test_1b_var_1_wld8 <- waldtest(model, vcov = vcovHC(model, cluster = "iddir"), c("Dum_IOU_BC", "Dum_IOU_Iddr"))
-Wld_test_1b_var_1_wld9 <- waldtest(model, vcov = vcovHC(omodel, cluster = "iddir"), c("Dum_IOU_BC", "Dum_IOU_Iddr_BC"))
-Wld_test_1b_var_1_wld10 <- waldtest(model, vcov = vcovHC(model, cluster = "iddir"), c("Dum_IOU_Iddr", "Dum_IOU_Iddr_BC"))
-
-# Wald Test - 1a Column 2
-Wld_test_1b_var_1_wld1 <- waldtest(out_bal_1_var_2, vcov = vcovHC(out_bal_1_var_1, cluster = "iddir"), c("Dum_Insrnce_Iddr", "Dum_IOU"))
-Wld_test_1b_var_1_wld2 <- waldtest(out_bal_1_var_2, vcov = vcovHC(out_bal_1_var_1, cluster = "iddir"), c("Dum_Insrnce_Iddr", "Dum_IOU_BC"))
-Wld_test_1b_var_1_wld3 <- waldtest(out_bal_1_var_2, vcov = vcovHC(out_bal_1_var_1, cluster = "iddir"), c("Dum_Insrnce_Iddr", "Dum_IOU_Iddr"))
-Wld_test_1b_var_1_wld4 <- waldtest(out_bal_1_var_2, vcov = vcovHC(out_bal_1_var_1, cluster = "iddir"), c("Dum_Insrnce_Iddr", "Dum_IOU_Iddr_BC"))
-Wld_test_1b_var_1_wld5 <- waldtest(out_bal_1_var_2, vcov = vcovHC(out_bal_1_var_1, cluster = "iddir"), c("Dum_IOU", "Dum_IOU_BC"))
-Wld_test_1b_var_1_wld6 <- waldtest(out_bal_1_var_2, vcov = vcovHC(out_bal_1_var_1, cluster = "iddir"), c("Dum_IOU", "Dum_IOU_Iddr"))
-Wld_test_1b_var_1_wld7 <- waldtest(out_bal_1_var_1, vcov = vcovHC(out_bal_1_var_1, cluster = "iddir"), c("Dum_IOU", "Dum_IOU_Iddr_BC"))
-Wld_test_1b_var_1_wld8 <- waldtest(out_bal_1_var_1, vcov = vcovHC(out_bal_1_var_1, cluster = "iddir"), c("Dum_IOU_BC", "Dum_IOU_Iddr"))
-Wld_test_1b_var_1_wld9 <- waldtest(out_bal_1_var_1, vcov = vcovHC(out_bal_1_var_1, cluster = "iddir"), c("Dum_IOU_BC", "Dum_IOU_Iddr_BC"))
-Wld_test_1b_var_1_wld10 <- waldtest(out_bal_1_var_1, vcov = vcovHC(out_bal_1_var_1, cluster = "iddir"), c("Dum_IOU_Iddr", "Dum_IOU_Iddr_BC"))
-
-
-## 6. Balance Test 2 ##########################################################
-
-# To Do:
-# Wald Tests
-# Table Results
-
-# Balance Test 2a
-
-# Regress Socio-Economic Variable on Treatment - Correct
-out_bal_2_var_1 <- lm(maizeqty ~ Dum_Insrnce_Iddr + Dum_IOU_Iddr_BC + Dum_IOU_Iddr + Dum_IOU_BC + Dum_IOU, data = data)
-out_bal_2_var_2 <- lm(HaricotQty ~ Dum_Insrnce_Iddr + Dum_IOU_Iddr_BC + Dum_IOU_Iddr + Dum_IOU_BC + Dum_IOU, data = data)
-out_bal_2_var_3 <- lm(Teffqty ~ Dum_Insrnce_Iddr + Dum_IOU_Iddr_BC + Dum_IOU_Iddr + Dum_IOU_BC + Dum_IOU, data = data)
-out_bal_2_var_4 <- lm(SorghumQty ~ Dum_Insrnce_Iddr + Dum_IOU_Iddr_BC + Dum_IOU_Iddr + Dum_IOU_BC + Dum_IOU, data = data)
-out_bal_2_var_5 <- lm(Wheatqty ~ Dum_Insrnce_Iddr + Dum_IOU_Iddr_BC + Dum_IOU_Iddr + Dum_IOU_BC + Dum_IOU, data = data)
-out_bal_2_var_6 <- lm(Barelyqty ~ Dum_Insrnce_Iddr + Dum_IOU_Iddr_BC + Dum_IOU_Iddr + Dum_IOU_BC + Dum_IOU, data = data) # Spelling mistake on variable
-out_bal_2_var_7 <- lm(Cultlandsize10_a ~ Dum_Insrnce_Iddr + Dum_IOU_Iddr_BC + Dum_IOU_Iddr + Dum_IOU_BC + Dum_IOU, data = data)
-out_bal_2_var_8 <- lm(saving_dummy ~ Dum_Insrnce_Iddr + Dum_IOU_Iddr_BC + Dum_IOU_Iddr + Dum_IOU_BC + Dum_IOU, data = data)
-
-# Robust Cluster Errors by Iddir - Correct
-se_2a_1 <- sqrt(diag(vcovCL(out_bal_2_var_1, cluster = data$iddir)))
-se_2a_2 <- sqrt(diag(vcovCL(out_bal_2_var_2, cluster = data$iddir)))
-se_2a_3 <- sqrt(diag(vcovCL(out_bal_2_var_3, cluster = data$iddir)))
-se_2a_4 <- sqrt(diag(vcovCL(out_bal_2_var_4, cluster = data$iddir)))
-se_2a_5 <- sqrt(diag(vcovCL(out_bal_2_var_5, cluster = data$iddir)))
-se_2a_6 <- sqrt(diag(vcovCL(out_bal_2_var_6, cluster = data$iddir)))
-se_2a_7 <- sqrt(diag(vcovCL(out_bal_2_var_7, cluster = data$iddir)))
-se_2a_8 <- sqrt(diag(vcovCL(out_bal_2_var_8, cluster = data$iddir)))
-
-# Wald Test- Not Correct
-out_bal_1b_var_1 <- lm(maizeqty  ~ Dum_Insrnce_Iddr + Dum_IOU_Iddr_BC + Dum_IOU_Iddr + Dum_IOU_BC + Dum_IOU, data = data)
-out_bal_1b_var_2 <- lm(HaricotQty ~ Dum_Insrnce_Iddr + Dum_IOU_Iddr_BC + Dum_IOU_Iddr + Dum_IOU_BC + Dum_IOU, data = data)
-out_bal_1b_var_3 <- lm(Teffqty  ~ Dum_Insrnce_Iddr + Dum_IOU_Iddr_BC + Dum_IOU_Iddr + Dum_IOU_BC + Dum_IOU, data = data)
-out_bal_1b_var_4 <- lm(SorghumQty ~ Dum_Insrnce_Iddr + Dum_IOU_Iddr_BC + Dum_IOU_Iddr + Dum_IOU_BC + Dum_IOU, data = data)
-out_bal_1b_var_5 <- lm(Wheatqty ~ Dum_Insrnce_Iddr + Dum_IOU_Iddr_BC + Dum_IOU_Iddr + Dum_IOU_BC + Dum_IOU, data = data)
-out_bal_1b_var_6 <- lm(Barelyqty ~ Dum_Insrnce_Iddr + Dum_IOU_Iddr_BC + Dum_IOU_Iddr + Dum_IOU_BC + Dum_IOU, data = data)
-out_bal_1b_var_7 <- lm(Cultlandsize10_a ~ Dum_Insrnce_Iddr + Dum_IOU_Iddr_BC + Dum_IOU_Iddr + Dum_IOU_BC + Dum_IOU, data = data)
-out_bal_1b_var_8 <- lm(saving_dummy ~ Dum_Insrnce_Iddr + Dum_IOU_Iddr_BC + Dum_IOU_Iddr + Dum_IOU_BC + Dum_IOU, data = data)
+kable(combined_tidy_model_summaries)
 
 ## 7. Insurance Uptake Rates ##################################################
 
@@ -504,6 +399,25 @@ summary(excl_DltMt_mdl)
 ## 8. Default Uptake Rates ####################################################
 
 ## 9. Plots and Graphs ########################################################
+
+# Table 0 Observation and Iddirs
+
+treatment_count
+
+# Table 1a Balancing Test 1: Regressions 
+
+table_1aa
+
+# Table 1b Balancing Test 1: Wald
+
+table_1ab
+# Table 2a Balancing Test 2: Regressions 
+
+table_1ba 
+
+# Table 2b Balancing Test 2: Wald
+
+table_1bb
 
 
 ## B. Extension ###############################################################

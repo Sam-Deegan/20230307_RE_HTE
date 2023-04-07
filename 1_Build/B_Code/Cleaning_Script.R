@@ -13,10 +13,14 @@
 ## 1. Library Packages ########################################################
 
 library(tidyverse) # Data Manipulation Package
+library(haven)
 
 ## 2. Prepare Data ############################################################
 
 # Load Data
+
+data <- read_dta(file.path("1_Build//A_Input//data.dta")) #https://data.mendeley.com/datasets/cxpwbr3sjb/1
+
 data <- read_csv(file.path("1_Build//A_Input//1-s2.0-S0304387818313154-mmc1.csv"))
 
 ## 3. Check Structure #########################################################
@@ -53,6 +57,7 @@ data <- data %>%
   mutate(IntervDate = as.Date(IntervDate, format = "%B %d, %Y"),
          Dateinterview2 = as.Date(Dateinterview2, format = "%B %d, %Y"))
 
+str(data$Randomization1)
 # Convert Factors
 data <- data %>% 
   mutate(across(where(is.character),as_factor))
@@ -124,6 +129,10 @@ outlier_list <- data_num_zscr %>%
 
 ## 7. Additional Formatting ###################################################
 
+treatment_count_1 <- data %>% 
+  group_by(Randomization1) %>%
+  summarise(Observations = n_distinct(Identifier),
+            Iddir = n_distinct(iddir))
 
 ## 8. Export Cleaned Data #####################################################
 

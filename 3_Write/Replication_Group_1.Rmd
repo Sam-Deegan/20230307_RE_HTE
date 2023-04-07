@@ -51,6 +51,8 @@ Our replication and extension study aims to build on the original study's findin
 
 In our study, we aim to estimate heterogeneous treatment effects using a multi-arm causal forest approach. This differs from the original study, which also estimated heterogeneous treatment effects but used a different method. Specifically, our approach allows us to estimate treatment effects for different subgroups of the population and account for potential interactions between different variables. Our results will contribute to a better understanding of the impact of insurance on smallholder farmers and inform policies aimed at improving their financial resilience.
 
+(More details of results and conclusions needed.)
+
 The paper is structured into six sections. The first section is the introduction, which provides an overview of the study and its objectives. The second section is the literature review, which discusses the existing research on the topic and identifies the research gaps that the study aims to address. The third section is the methodology, which describes the data sources, study design, and statistical techniques used to analyze the data. The fourth section is the results, which presents the findings of the study. The fifth section is the extension, which discusses the multi-arm causal forest approach used to estimate heterogeneous treatment effects. The sixth and final section is the conclusion, which summarizes the study's key findings and their implications for policy and future research.
 
 \section{Literature Review}
@@ -79,12 +81,40 @@ The paper is structured into six sections. The first section is the introduction
 C1. Replication Methodology: In this subsection, we describe the methodology used to replicate the original study. We provide a detailed explanation of the data and methods used in the original study, including any necessary assumptions or model specifications. We also explain the steps taken to ensure that our replication accurately reproduces the original study's results.
 
 The authors worked together with Oromia Insurance Company (OIC) in Ethiopia and used multi-level randomization at the Iddir level to assign the 144 Iddirs to six experimental arms: 1) Standard Index Insurance (control group); 2) Standard Index Insurance via Iddir promotions; 3) IOU insurance; 4) IOU insurance with Contract; 5) IOU insurance via Iddir promotions; and 6) IOU insurance via Iddir promotions with Contract. And they collected data on household demographic characteristics including age, sex, marital status, education and family size; household income, households’ level of exposure to drought, experience in buying crop insurance before the experiment, household production and saving variables.
+
 To verify whether randomization resulted in balanced groups they regress household observables and farming variables on treatment group dummies and a constant. The constant reflects the comparison group. The coefficients indicate whether other groups are significantly different from the comparison group, and we test for differences between other groups by Wald tests. The results suggest the randomization worked well.
+
 Then, they present insurance uptake across treatment arms and do regression analysis, both showing that uptake change induced by Iddir promotions in isolation is statistically insignificant, as is IOU with binding contract. They also exclude the subsample from a certain Kebele, Dalota Mati, which all the defaults in the dataset come from, to increase the statistical power of the analysis.
+
 They perform a heterogeneity analysis, to figure out if they can attribute the increase in uptake under IOU insurance to the relaxation of the liquidity constraint. To proxy for liquidity, they distinguish between households with above and below-median income, and between households with and without savings (self-reported). And for both proxies, the coefficients of the simple IOU product are higher for the liquidity-constrained. However, while the IOU coefficient of the (more) constrained subsample is consistently different from zero, and the coefficient for the complementary sample is not, the relevant coefficients are not statistically different from each other (according to a Wald test). This can also be seen by the insignificance of the coefficients using the interaction term instead of subsamples.
 
 
 C2. Extension Methodology: In this subsection, we describe the methodology used for our extension analysis, which seeks to estimate heterogeneous treatment effects using a multi-arm causal forest approach. We provide an overview of the statistical methods employed, including any necessary assumptions or model specifications.
+
+For extension of the replication, we apply a non-parametric causal forest, which is developed by Wager and Athey (2017) and can achieve better matching with many covariates, for estimating heterogeneous treatment effects that extends Breiman’s widely used random forest algorithm. In the potential outcomes framework with unconfoundedness, causal forests are pointwise consistent for the true treatment effect, and have an asymptotically Gaussian and centred sampling distribution. The causal forests give us a better understanding of treatment effect heterogeneity, so we apply this method to the original paper, which reveals the treatment effects of a drought insurance, to analyse the heterogeneity of the effects on individuals with different characteristics.
+
+The steps of the method can be briefly summarised as follows:
+
+Step 1: The causal forest uses double-sample trees to split the available training data into two parts: one half (\(I\)) for estimating the desired response inside each leaf, the other half (\(J\)) for placing splits. Double-sample regression trees make predictions \(\hat{\mu}(x)\) using
+
+\begin{equation}
+    \hat{\mu}(x)=\frac{1}{|i:X_{i}\in L(x)|}\sum\limits_{|i:X_{i}\in L(x)|}Y_{i}.
+\end{equation}
+
+on the leaf containing \(x\), only using the \(I\)-sample observations. The splitting criteria is the standard for CART regression trees (minimizing mean-squared error of predictions). Splits are restricted so that each leaf of the tree must contain \(k\) or more \(I\)-sample observations. And double-sample causal trees are defined similarly, except that for prediction we estimate \(\hat{\tau}(x)\) using
+
+\begin{equation}
+    \hat{\tau}(x)=\frac{1}{|i:W_{i}=1,X_{i}\in L|}\sum\limits_{|i:W_{i}=1,X_{i}\in L|}Y_{i}-\frac{1}{|i:W_{i}=0,X_{i}\in L|}\sum\limits_{|i:W_{i}=0,X_{i}\in L|}Y_{i}.
+\end{equation}
+
+on the \(I\) sample. Following Athey and Imbens (2016), the splits of the tree are chosen by maximizing the variance of \(\hat{\tau}(x)\) for \(i\in J\).
+
+Step 2: Propensity trees use only the treatment assignment indicator \(W_{i}\) to place splits, and save the responses \(W_{i}\) for estimating \(\tau\). The splits are chosen by optimizing, e.g., the Gini criterion used by CART for classification.
+
+Step 3: Compute a random forest by Monte Carlo averaging.
+
+Under regularity assumptions, causal forests can realise unconfoundedness and therefore achieve consistency without needing to explicitly estimate the propensity. And given all the preliminaries needed, we can state reliable results on the asymptotic normality of random forests.
+
 
 C3. Estimating Heterogeneous Treatment Effects: In this subsection, we provide a detailed explanation of our approach to estimating heterogeneous treatment effects using the multi-arm causal forest method. This includes information on the choice of tuning parameters, model diagnostics, and methods used for inference.
 
@@ -92,13 +122,7 @@ C4. Sensitivity Analyses: In this subsection, we describe the sensitivity analys
 
 C5. Challenges and Limitations: In this subsection, we discuss any challenges faced in replicating the original study, including any discrepancies or issues with the data or code. We also discuss the limitations of our replication and extension analysis and provide suggestions for improving future research.
 
-
-
-
-
-
-
-
+When checking the dataset we obtained from the official resource, we found that the numbers of \textit{Iddirs} of three groups---IBI, IOU and IOU_C, are much larger than the results in the original paper, while the total number of \textit{Iddirs} and the numbers of observations of all groups are consistent. The original paper does not explain whether/how they recategorise the households into new \textit{Iddirs}. Due to this ambiguity, our randomisation does not work as well as that of the original study.
 
 
 

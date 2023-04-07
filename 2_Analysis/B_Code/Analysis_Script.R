@@ -71,7 +71,16 @@ data$Randomization1 <- factor(data$Randomization1, levels = c("standard insuranc
                                                               "IOU insurance through iddirs without BC",
                                                               "IOU insurance through the usual channel with BC",
                                                               "IOU insurance through usual channel without BC"))
-
+data$Uptake1 <- as.factor(as.character(data$Uptake1))
+str(data$Uptake1)
+data$Uptake1 <- factor(data$Uptake1, levels = c("standard insurance through the usual channel (coops)",
+                                                "Standard insurance through iddirs", 
+                                                "IOU insurance through iddirs with BC",
+                                                "IOU insurance through iddirs without BC",
+                                                "IOU insurance through the usual channel with BC",
+                                                "IOU insurance through usual channel without BC",
+                                                "Non-buyer"))
+levels(data$uptake)                         
 treatment_count_3 <- data %>% 
   group_by(Randomization1) %>%
   summarise(Observations = n_distinct(Identifier),
@@ -375,6 +384,12 @@ kable(combined_tidy_model_summaries)
   # Wald Tests
   # Table Results
 
+  # Graph Uptake Rates
+cross_tab <- data %>% 
+  select(Randomization1, Uptake1) %>% 
+  count(Randomization1, Uptake1) %>% 
+  pivot_wider(names_from =Randomization1, values_from = n, values_fill= 0)
+
   # Parsimonious Model 
 prsmns_mdl  <- lm(Uptake1dummy ~ Dum_Insrnce_Iddr + Dum_IOU_Iddr_BC + Dum_IOU_Iddr + Dum_IOU_BC + Dum_IOU, data = data)
 prsmns_se <- sqrt(diag(vcovCL(prsmns_mdl, cluster = data$iddir)))
@@ -411,6 +426,7 @@ table_1aa
 # Table 1b Balancing Test 1: Wald
 
 table_1ab
+
 # Table 2a Balancing Test 2: Regressions 
 
 table_1ba 

@@ -92,6 +92,9 @@ data$marriage_dummy <- ifelse(data$Mstatus == "Married", 1,0)
 # Dummy Saving
 data$saving_dummy <- ifelse(data$HaveSaving12_a == "Yes", 1,0)
 
+# Log TIncomeLastMnth
+data$LTincomelastMnth <- log(data$TincomelastMnth+1)
+
 # Numeric Education
 data$Education <- as.numeric(as.character(data$Education))
 
@@ -556,6 +559,7 @@ relevant_columns <- c("Identifier",
                       "Education",
                       "Famsize",
                       "TincomelastMnth",
+                      "LTincomelastMnth",
                       "FSevdrought",
                       "buyIBIdummy",
                       "maizeqty",
@@ -577,7 +581,8 @@ outcome <- as.matrix(cf_data$Uptake1)
 treatment <- as.factor(cf_data$Randomization1)
 
   # Format Covariates
-covariates <- as.matrix(data[,c("Age",
+covariates <- as.matrix(data[,c("LTincomelastMnth",
+                                "Age",
                                 "sex_dummy",
                                 "marriage_dummy",
                                 "saving_dummy",
@@ -593,7 +598,6 @@ covariates <- as.matrix(data[,c("Age",
                                 "Barelyqty",
                                 "Cultlandsize10_a")])
 
-smds <- cobalt::bal.tab(covariates, treatment, s.d.denom = "standard insurance through the usual channel (coops)")
 
   # Format Iddir Cluster as 
 cf_data$Iddir <- as.numeric(cf_data$Iddir)
@@ -601,18 +605,61 @@ cf_data$Iddir <- as.numeric(cf_data$Iddir)
 ## 2. Fit Model  ##############################################################
 
   # Run Multi-Arm Causal Model - Handles Multiple Treatments
-cf_multi <- multi_arm_causal_forest(covariates, outcome, treatment, cluster= cf_data$Iddir,num.trees = 2000, seed =123)
+cf_multi <- multi_arm_causal_forest(covariates, outcome, treatment, cluster= cf_data$Iddir,num.trees = 2000, honesty = TRUE, seed =123)
 
-  # Potential addition: 
+  # Plots
+
+  # Get sample weights: warning that the treatment propensities are close to 0 or 1
 dbl_rbst_scr <- get_scores(cf_multi)
   
-  # Return Datapoints to Fit Model
-cf_predict <- predict(cf_multi)
+
+# Run predict function to obtain CATE by treatment and confidence intervals
+predict_output <- predict(cf_multi, estimate.variance = TRUE)
+
+# Extract the number of treatments and observations
+num_treatments <- length(levels(factor(treatment)))
+num_obs <- length(treatment)
+
+# Create an empty data frame to store the CATE and confidence intervals
+ci_data <- data.frame(Estimate = numeric(num_treatments * num_obs), 
+                      Lower = numeric(num_treatments * num_obs),
+                      Upper = numeric(num_treatments * num_obs),
+                      treatment = factor(rep(levels(factor(treatment)), each = num_obs)))
+
+# Fill in the data frame with the CATE and confidence intervals
+for (i in 1:num_treatments) {
+  start_idx <- (i-1) * num_obs + 1
+  end_idx <- i * num_obs
+  ci_data[start_idx:end_idx, "Estimate"] <- predict_output$predictions[, i, 1]
+  ci_data[start_idx:end_idx, "Lower"] <- predict_output$predictions[, i, 1] - z * sqrt(predict_output$variances[, i])
+  ci_data[start_idx:end_idx, "Upper"] <- predict_output$predictions[, i, 1] + z * sqrt(predict_output$variances[, i])
+  ci_data[start_idx:end_idx, "treatment"] <- factor(rep(levels(factor(treatment))[i], each = num_obs))
+}
+     
+
+# Plot the CATE by treatment with 95% CIs
+library(ggplot2)
+ggplot(ci_data, aes(x = treatment, y = Estimate, ymin = Lower, ymax = Upper)) +
+  geom_point(size = 3, color = "blue") +
+  geom_errorbar(width = 0.2, color = "blue") +
+  labs(x = "Treatment", y = "CATE") +
+  theme_classic()
+
+
+
+tau.hat <- cf_predict$predictions
+
+# Plot log of (TIncome Last month + 1) against CATE
+plot(covariates[,1], tau.hat[,2, 1], ylab = "tau.contrast")
+abline(0, 1, col = "red")
+
+#average treatment effedt
+average_treatment_effect(cf_multi, method = "AIPW",)
 
   # Estimate CATE
 cf_predict_CATE <- predict(cf_multi, estimate_cate = TRUE)$predictions
 
-# Get a warning that th treatment propensities are close to 0 or 1. This means treatment effects are not well identified
+# Get a warning that the treatment propensities are close to 0 or 1. This means treatment effects are not well identified
   # Issue is present in most treatment groups. minimum treatment propensities in each arm are close to 0.
   # Reasons:
     # (Possible, lots of variables) High Dimensional Covariates: This can lead extreme treatment propensities due to overfitting. Section 3.4 of "Propensity Score Analysis: Statistical Methods and Applications" by Guo and Fraser (2015).
@@ -673,6 +720,17 @@ summary(smds$Balance.Across.Pairs) # Max.Diff.Un is very close to the 0.2 thresh
 # Problem solving 3: Model mispecification. Non randomised control group. Not sure we can resolve this. Data issue
 
 # Problem solving 4: Non linear relationship between control group and covariates. Issue persists despite reduducing no of variables to logged quantities
+
+# Format Covariates
+covariates <- as.matrix(data[,c("LTincomelastMnth")])
+
+cf_multi <- multi_arm_causal_forest(covariates, outcome, treatment, cluster= cf_data$Iddir,num.trees = 2000, seed =123)
+
+# Potential addition: 
+dbl_rbst_scr <- get_scores(cf_multi)
+
+# Check imbalanced treatment assignment
+smds <- cobalt::bal.tab(covariates, treatment, s.d.denom = "standard insurance through the usual channel (coops)")
 
 ## 3. Evaluate Model ##########################################################
 

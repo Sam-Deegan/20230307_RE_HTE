@@ -24,7 +24,9 @@ library(caret) # Machine Learning Package
 library(sandwich) # Standard Error Adjustment Package
 library(lmtest) # Regression Model Testing Package
 library(kableExtra) # Create LaTeX tables
-library(broom)
+library(cobalt)
+
+
 options(scipen = 999)
 ## 2. Prepare Data ############################################################
 
@@ -89,6 +91,9 @@ data$marriage_dummy <- ifelse(data$Mstatus == "Married", 1,0)
 
 # Dummy Saving
 data$saving_dummy <- ifelse(data$HaveSaving12_a == "Yes", 1,0)
+
+# Log TIncomeLastMnth
+data$LTincomelastMnth <- log(data$TincomelastMnth+1)
 
 # Numeric Education
 data$Education <- as.numeric(as.character(data$Education))
@@ -438,7 +443,6 @@ data %>%
   ungroup() 
 
 # Models
-
   # Parsimonious Model 
 prsmns_mdl  <- lm(Uptake1dummy ~ Dum_Insrnce_Iddr + Dum_IOU_Iddr_BC + Dum_IOU_Iddr + Dum_IOU_BC + Dum_IOU, data = data)
 prsmns_se <- vcovCL(prsmns_mdl, cluster = data$Iddir)
@@ -450,12 +454,10 @@ addtnl_se <- vcovCL(addtnl_mdl, cluster = data$Iddir)
 addtnl_mdl_2  <- coeftest(addtnl_mdl, addtnl_se)
 
   # Excluding Daloti #Mati
-
 data_filtered <- data %>% filter(Kebele != "Dalota Mati")
 excl_DltMt_mdl <- lm(Uptake1dummy ~ Dum_Insrnce_Iddr + Dum_IOU_Iddr_BC + Dum_IOU_Iddr + Dum_IOU_BC + Dum_IOU + Age + sex_dummy + marriage_dummy + Education + Famsize + TincomelastMnth + FSevdrought + buyIBIdummy + maizeqty + HaricotQty + Teffqty + SorghumQty + Wheatqty + Barelyqty + Cultlandsize10_a + saving_dummy + factor(Kebele), data = data_filtered)
 excl_DltMt_se <-vcovCL(excl_DltMt_mdl, cluster = data_filtered$Iddir)
 excl_DltMt_mdl_2  <- coeftest(excl_DltMt_mdl, excl_DltMt_se)
-
 
 
 # Wald Tests Model prsmns_mdl
@@ -520,6 +522,10 @@ cross_tab
 # Figure 2
 figure_2
 
+# Tables
+
+# Probably needs to be composed manually. 
+
 
 
 
@@ -553,6 +559,7 @@ relevant_columns <- c("Identifier",
                       "Education",
                       "Famsize",
                       "TincomelastMnth",
+                      "LTincomelastMnth",
                       "FSevdrought",
                       "buyIBIdummy",
                       "maizeqty",
@@ -568,10 +575,124 @@ relevant_columns <- c("Identifier",
 cf_data <- dplyr::select(data, relevant_columns)
 
   # Format Outcome
-outcome <- as.matrix(cf_data$Uptake1dummy)
+outcome <- as.matrix(cf_data$Uptake1)
 
   # Format Treatment
 treatment <- as.factor(cf_data$Randomization1)
+
+  # Format Covariates
+covariates <- as.matrix(data[,c("LTincomelastMnth",
+                                "Age",
+                                "sex_dummy",
+                                "marriage_dummy",
+                                "saving_dummy",
+                                "Education",
+                                "Famsize",
+                                "FSevdrought",
+                                "buyIBIdummy",
+                                "maizeqty",
+                                "HaricotQty",
+                                "Teffqty",
+                                "SorghumQty",
+                                "Wheatqty",
+                                "Barelyqty",
+                                "Cultlandsize10_a")])
+
+
+  # Format Iddir Cluster as 
+cf_data$Iddir <- as.numeric(cf_data$Iddir)
+
+## 2. Fit Model  ##############################################################
+
+  # Run Multi-Arm Causal Model - Handles Multiple Treatments
+cf_multi <- multi_arm_causal_forest(covariates, outcome, treatment, cluster= cf_data$Iddir,num.trees = 2000, honesty = TRUE, seed =123)
+
+  # Plots
+
+  # Get sample weights: warning that the treatment propensities are close to 0 or 1
+dbl_rbst_scr <- get_scores(cf_multi)
+  
+
+# Run predict function to obtain CATE by treatment and confidence intervals
+predict_output <- predict(cf_multi, estimate.variance = TRUE)
+
+# Extract the number of treatments and observations
+num_treatments <- length(levels(factor(treatment)))
+num_obs <- length(treatment)
+
+# Create an empty data frame to store the CATE and confidence intervals
+ci_data <- data.frame(Estimate = numeric(num_treatments * num_obs), 
+                      Lower = numeric(num_treatments * num_obs),
+                      Upper = numeric(num_treatments * num_obs),
+                      treatment = factor(rep(levels(factor(treatment)), each = num_obs)))
+
+# Fill in the data frame with the CATE and confidence intervals
+for (i in 1:num_treatments) {
+  start_idx <- (i-1) * num_obs + 1
+  end_idx <- i * num_obs
+  ci_data[start_idx:end_idx, "Estimate"] <- predict_output$predictions[, i, 1]
+  ci_data[start_idx:end_idx, "Lower"] <- predict_output$predictions[, i, 1] - z * sqrt(predict_output$variances[, i])
+  ci_data[start_idx:end_idx, "Upper"] <- predict_output$predictions[, i, 1] + z * sqrt(predict_output$variances[, i])
+  ci_data[start_idx:end_idx, "treatment"] <- factor(rep(levels(factor(treatment))[i], each = num_obs))
+}
+     
+
+# Plot the CATE by treatment with 95% CIs
+library(ggplot2)
+ggplot(ci_data, aes(x = treatment, y = Estimate, ymin = Lower, ymax = Upper)) +
+  geom_point(size = 3, color = "blue") +
+  geom_errorbar(width = 0.2, color = "blue") +
+  labs(x = "Treatment", y = "CATE") +
+  theme_classic()
+
+
+
+tau.hat <- cf_predict$predictions
+
+# Plot log of (TIncome Last month + 1) against CATE
+plot(covariates[,1], tau.hat[,2, 1], ylab = "tau.contrast")
+abline(0, 1, col = "red")
+
+#average treatment effedt
+average_treatment_effect(cf_multi, method = "AIPW",)
+
+  # Estimate CATE
+cf_predict_CATE <- predict(cf_multi, estimate_cate = TRUE)$predictions
+
+# Get a warning that the treatment propensities are close to 0 or 1. This means treatment effects are not well identified
+  # Issue is present in most treatment groups. minimum treatment propensities in each arm are close to 0.
+  # Reasons:
+    # (Possible, lots of variables) High Dimensional Covariates: This can lead extreme treatment propensities due to overfitting. Section 3.4 of "Propensity Score Analysis: Statistical Methods and Applications" by Guo and Fraser (2015).
+    # (Possible, treatment arms differ significantly in size) Imbalanced Treatment Assignment: Strong bias in treatment where one arm is much larger than the others. Section 2.2 of "Causal Forests: An Alternative to Randomized Controlled Trials" by Wager and Athey (2018)
+    # (Possible, ) Model mispecification Section 2.2 of "Propensity Score Methods for Bias Reduction in the Comparison of a Treatment to a Non-Randomized Control Group" by Rosenbaum and Rubin (1983).
+    # (Less likely, data is logged or binary) Non-linear relationships between covariates and treatment assignment Section 2.3 of "Causal Inference in Statistics: An Overview" by Pearl (2016).
+
+ 
+  # Problem solving 1: Reduce Covariates - No solution
+
+# cf_multi indicates that production quantities have a variable importance exceeding .1. However, "maizeqty", "Teffqty", "Wheatqty" exceed 0
+
+# Format Covariates
+covariates <- as.matrix(data[,c("maizeqty",
+                                "HaricotQty",
+                                "Teffqty",
+                                "SorghumQty",
+                                "Wheatqty",
+                                "Barelyqty")])
+
+# Run Multi-Arm Causal Model - Handles Multiple Treatments
+cf_multi <- multi_arm_causal_forest(covariates, outcome, treatment, cluster= cf_data$Iddir,num.trees = 2000, seed =123)
+
+# Potential addition: 
+dbl_rbst_scr <- get_scores(cf_multi) # Improves result but issue persists, low propensity scores. Removing further was not helpful
+
+# Return Datapoints to Fit Model
+cf_predict <- predict(cf_multi)
+
+# Estimate CATE
+cf_predict_CATE <- predict(cf_multi, estimate_cate = TRUE)$predictions
+
+# Problem solving 2: Imbalanced Treatment Assignment, No Solution
 
   # Format Covariates
 covariates <- as.matrix(data[,c("Age",
@@ -590,18 +711,26 @@ covariates <- as.matrix(data[,c("Age",
                                 "Barelyqty",
                                 "Cultlandsize10_a")])
 
-  # Format Iddir Cluster as 
-cf_data$Iddir <- as.numeric(cf_data$Iddir)
+  # Check imbalanced treatment assignment
+smds <- cobalt::bal.tab(covariates, treatment, s.d.denom = "standard insurance through the usual channel (coops)")
+  
+  # Data is imbalanced (exceeds)
+summary(smds$Balance.Across.Pairs) # Max.Diff.Un is very close to the 0.2 threshold, but just below.
 
-## 2. Fit Model  ##############################################################
+# Problem solving 3: Model mispecification. Non randomised control group. Not sure we can resolve this. Data issue
 
-  # Run Multi-Arm Causal Model - Handles Multiple Treatments
+# Problem solving 4: Non linear relationship between control group and covariates. Issue persists despite reduducing no of variables to logged quantities
+
+# Format Covariates
+covariates <- as.matrix(data[,c("LTincomelastMnth")])
+
 cf_multi <- multi_arm_causal_forest(covariates, outcome, treatment, cluster= cf_data$Iddir,num.trees = 2000, seed =123)
 
-  # Return Datapoints to Fit Model
-cf_predict <- predict(cf_multi)
+# Potential addition: 
+dbl_rbst_scr <- get_scores(cf_multi)
 
-cf_predict_CATE <- predict(cf_multi, estimate_cate = TRUE)$predictions
+# Check imbalanced treatment assignment
+smds <- cobalt::bal.tab(covariates, treatment, s.d.denom = "standard insurance through the usual channel (coops)")
 
 ## 3. Evaluate Model ##########################################################
 
@@ -610,6 +739,7 @@ cf_predict_CATE <- predict(cf_multi, estimate_cate = TRUE)$predictions
 average_treatment_effect(cf_multi, method = "AIPW",) # AIPW is for doubly robust errors
 
 tune_pa(covariates, outcome, treatment, cluster= cf_data$Iddir)
+
   # Summary 
 summary(cf_multi)
 

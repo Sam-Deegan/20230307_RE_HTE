@@ -24,6 +24,7 @@ library(caret) # Machine Learning Package
 library(sandwich) # Standard Error Adjustment Package
 library(lmtest) # Regression Model Testing Package
 library(kableExtra) # Create LaTeX tables
+library(broom) # Convert statistical models into data frames
 library(cobalt)
 
 
@@ -506,15 +507,23 @@ treatment_count
 
 # Table 1a Balancing Test 1: Regressions 
 table_1aa
+kable(table_1aa, "latex") %>%
+  kable_styling(bootstrap_options = NULL)
 
 # Table 1b Balancing Test 1: Wald
 table_1ab
+kable(table_1ab, "latex") %>%
+  kable_styling(bootstrap_options = NULL)
 
 # Table 2a Balancing Test 2: Regressions 
-table_1ba 
+table_1ba
+kable(table_1ba, "latex") %>%
+  kable_styling(bootstrap_options = NULL)
 
 # Table 2b Balancing Test 2: Wald
 table_1bb
+kable(table_1bb, "latex") %>%
+  kable_styling(bootstrap_options = NULL)
 
 # Additional: Cross-Tabulation of Treatment-uptake. Compliers on diagonal
 cross_tab 

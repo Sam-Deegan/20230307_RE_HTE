@@ -126,7 +126,19 @@ Under regularity assumptions, causal forests can realise unconfoundedness and th
 
 C3. Estimating Heterogeneous Treatment Effects: In this subsection, we provide a detailed explanation of our approach to estimating heterogeneous treatment effects using the multi-arm causal forest method. This includes information on the choice of tuning parameters, model diagnostics, and methods used for inference.
 
+Our approach to estimating heterogeneous treatment effects using the multi-arm causal forest method consists of several steps:
+
+Data preparation: We first prepare the data by selecting relevant covariates and outcome variables, and by converting categorical variables to numeric ones. We also specify the reference level for the treatment variable.
+
+Propensity score estimation: We estimate the propensity score, which is the probability of receiving treatment conditional on the covariates. This is done using logistic regression, where the treatment variable is the dependent variable and the covariates are the independent variables.
+
+Causal forest estimation: We then estimate the causal forest using the multi-arm version of the method, where we include all treatment arms in the model. The causal forest is a collection of decision trees, where each tree predicts the outcome variable for a particular treatment arm, given the covariates and the propensity score.
+
+Treatment effect estimation: Once the causal forest is estimated, we use it to estimate the heterogeneous treatment effects. This is done by calculating the difference in predicted outcomes between each treatment arm and the reference arm, for each individual. These differences are the estimated treatment effects.
+
 C4. Sensitivity Analyses: In this subsection, we describe the sensitivity analyses conducted to assess the robustness of our results to potential model misspecification and data limitations. We also discuss any limitations or caveats to our approach and provide suggestions for future research.
+
+We also perform a sensitivity analysis to assess the robustness of our results to different specifications of the causal forest model. This involves varying the parameters of the model, such as the number of trees and the minimum leaf size, and comparing the estimated treatment effects across different models.
 
 C5. Challenges and Limitations: In this subsection, we discuss any challenges faced in replicating the original study, including any discrepancies or issues with the data or code. We also discuss the limitations of our replication and extension analysis and provide suggestions for improving future research.
 
@@ -183,6 +195,12 @@ Insurance uptake rates increase under IOU.
 \item Recommend any changes to the original methods or data for future research
 
 \end{itemize}
+
+In this study, we replicate the main results obtained by Belissa et al. (2019) and use the causal forests developed by Waiger and Athey (2017) to conduct heterogeneity analysis, trying to have a closer look at the heterogeneous effects of the multi-arm treatments of the insurance design on households with different socio-economic and production characteristics.
+
+The replication task does not fully reproduce the results obtained by the authors. We download the dataset from the official website and find an obvious data issue that leads to discrepancies in the results---the numbers of \textit{Iddirs} of three treatment groups are much higher than those shown in the original paper. This indicates that some \textit{Iddirs} received different types of policy impacts, which is different from what the authors state in the paper. With inability to solve this issue, we show that our randomisation does not work as well as the original study. However, we still obtain very similar results in the subsequent analysis, including the uptake rates of different types of insurance designs and the effects of the insurance designs gained from the regressions. We can still conclude that delaying weather insurance payment (IOU) increases uptake and promoting weather insurance via \textit{Iddir} leaders increases uptake of IOU. And we also find a negative role of binding contracts.
+
+We then use the multi-arm causal forest to extend the heterogeneity analysis.
 
 
 ## Document Styling Guidelines

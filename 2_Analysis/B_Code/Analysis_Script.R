@@ -516,7 +516,8 @@ md3_1_w10 <- waldtest(excl_DltMt_mdl, vcov = vcovHC(excl_DltMt_mdl, cluster = "I
 ## 9. Plots and Graphs ########################################################
 
 # Table 0 Observation and Iddirs
-treatment_count
+kable(treatment_count, "latex") %>%
+  kable_styling(bootstrap_options = NULL)
 
 # Table 1a Balancing Test 1: Regressions 
 table_1aa
@@ -542,7 +543,11 @@ kable(table_1bb, "latex") %>%
 cross_tab 
 
 # Figure 2
+
 figure_2
+
+ggsave(filename = "figure_2", plot = figure_2, device = "png", path = "2_Analysis//C_Output//")
+
 
 # Tables
 
@@ -564,13 +569,11 @@ figure_2
 
 ## 1. Prepare Data ############################################################
 
+# step 1: prepare run a trial causal forest model with our balancing variables to test which variables are identified as most important for the causal forest algorithm. 
+# step 2: 
 
-# create a new column indicating the quintile of each observation
-data$Incm_qntl <- cut(data$LTincomelastMnth, breaks = thirds, labels = FALSE, duplicates.ok = TRUE)
+# Test 
 
-quantile <- quantile(data$Cultlandsize10_a, probs = seq(0, 1, 0.2), duplicates.ok = TRUE)
-
-data$clt_lnd_qntl <- cut(data$Cultlandsize10_a, breaks = quantile , labels = FALSE, duplicates.ok = TRUE)
 
   # Relevant Variables
 relevant_columns <- c("Identifier",
@@ -582,11 +585,21 @@ relevant_columns <- c("Identifier",
                       "Dum_IOU_Iddr",
                       "Dum_IOU_BC",
                       "Dum_IOU",
-                      "Age",
-                      "Education",
-                      "Mstatus",
-                      "Famsize",
-                      "LTincomelastMnth",
+                      "Age", 
+                      "sex_dummy", 
+                      "marriage_dummy", 
+                      "Education", 
+                      "Famsize", 
+                      "TincomelastMnth", 
+                      "FSevdrought", 
+                      "buyIBIdummy",
+                      "maizeqty", 
+                      "HaricotQty", 
+                      "Teffqty", 
+                      "SorghumQty", 
+                      "Wheatqty", 
+                      "Barelyqty", 
+                      "Cultlandsize10_a", 
                       "saving_dummy",
                       "Iddir") 
 
@@ -599,7 +612,109 @@ outcome <- as.matrix(cf_data$Uptake1)
 
 treatment <- as.factor(cf_data$Randomization1)
 
-  # Format Covariates
+# Format Covariates
+covariates <- as.matrix(data[,c("Age", 
+                                "sex_dummy", 
+                                "marriage_dummy", 
+                                "Education", 
+                                "Famsize", 
+                                "TincomelastMnth", 
+                                "FSevdrought", 
+                                "buyIBIdummy",
+                                "maizeqty", 
+                                "HaricotQty", 
+                                "Teffqty", 
+                                "SorghumQty", 
+                                "Wheatqty", 
+                                "Barelyqty", 
+                                "Cultlandsize10_a", 
+                                "saving_dummy")])
+
+
+covariate_names <- c("Age", 
+                     "sex_dummy", 
+                     "marriage_dummy", 
+                     "Education", 
+                     "Famsize", 
+                     "TincomelastMnth", 
+                     "FSevdrought", 
+                     "buyIBIdummy",
+                     "maizeqty", 
+                     "HaricotQty", 
+                     "Teffqty", 
+                     "SorghumQty", 
+                     "Wheatqty", 
+                     "Barelyqty", 
+                     "Cultlandsize10_a", 
+                     "saving_dummy")
+
+# Format Iddir Cluster as numeric
+cf_data$Iddir <- as.numeric(cf_data$Iddir)
+
+# Causal Forest Main Attempt
+multi_cf_test <- multi_arm_causal_forest(covariates, #Covariates
+                                      outcome, # Outcomes
+                                      treatment, #Treatments
+                                      cluster= cf_data$Iddir, # cluster error by Iddir
+                                      num.trees = 2000, # standard tree number
+                                      honesty = TRUE, #Honesty on 
+                                      seed =123) # reproducible seed
+
+# Split by covariate
+multi_cf_1_vi_t <- c(variable_importance(multi_cf_test))
+
+# Names covariate importance
+names(multi_cf_1_vi_t) <- covariate_names
+
+# Sort covariates by importance
+multi_cf_1_vi_t <- sort(multi_cf_1_vi_t, decreasing = TRUE)
+
+# Print importance
+print(multi_cf_1_vi_t)
+
+
+
+
+
+
+## 2. Fit Model  ##############################################################
+
+# create a new column indicating the quintile of each observation
+data$Incm_qntl <- cut(data$LTincomelastMnth, breaks = thirds, labels = FALSE, duplicates.ok = TRUE)
+
+quantile <- quantile(data$Cultlandsize10_a, probs = seq(0, 1, 0.2), duplicates.ok = TRUE)
+
+data$clt_lnd_qntl <- cut(data$Cultlandsize10_a, breaks = quantile , labels = FALSE, duplicates.ok = TRUE)
+
+
+# Relevant Variables
+relevant_columns <- c("Identifier",
+                      "Randomization1",
+                      "Uptake1dummy",
+                      "Dum_Insrnce_Stndrd",
+                      "Dum_Insrnce_Iddr",
+                      "Dum_IOU_Iddr_BC",
+                      "Dum_IOU_Iddr",
+                      "Dum_IOU_BC",
+                      "Dum_IOU",
+                      "Age",
+                      "Education",
+                      "marriage_dummy",
+                      "Famsize",
+                      "LTincomelastMnth",
+                      "saving_dummy",
+                      "Iddir") 
+
+cf_data <- data %>% select(relevant_columns)
+# Separate Dataset
+levels(cf_data$Randomization1) <- c("Standrd", "Standard Iddir","IOU Iddir Contract", "IOU Iddir", "IOU Contract", "IOU")
+
+# Format Outcome
+outcome <- as.matrix(cf_data$Uptake1)
+
+treatment <- as.factor(cf_data$Randomization1)
+
+# Format Covariates
 covariates <- as.matrix(data[,c("Age",
                                 "Education",
                                 "marriage_dummy",
@@ -615,10 +730,9 @@ covariate_names <- c("Age",
                      "LTincomelastMnth",
                      "saving_dummy")
 
-  # Format Iddir Cluster as numeric
+# Format Iddir Cluster as numeric
 cf_data$Iddir <- as.numeric(cf_data$Iddir)
 
-## 2. Fit Model  ##############################################################
 
 # Causal Forest Main Attempt
 multi_cf_1 <- multi_arm_causal_forest(covariates, #Covariates
@@ -629,6 +743,7 @@ multi_cf_1 <- multi_arm_causal_forest(covariates, #Covariates
                                       honesty = TRUE, #Honesty on 
                                       seed =123) # reproducible seed
 summary(multi_cf_1)
+
   # Don't look at distribution of predictions. Unreliable. See 4.2.3: https://bookdown.org/stanfordgsbsilab/ml-ci-tutorial/hte-i-binary-treatment.html
 
 # See how often a variable was used to split a tree
@@ -715,7 +830,7 @@ for (t in unique(predictions$treatment)) {
     geom_smooth(method = "lm", se = TRUE, fullrange = TRUE, color = "blue") +
     scale_x_continuous() +
     scale_y_continuous(limits = c(-0.2, .60)) +
-    labs(title = paste("CATE by Income", t),
+    labs(title = paste(t),
          x = "Log Income Previous Month",
          y = "CATE") +
     theme_classic()
@@ -755,7 +870,7 @@ for (t in unique(predictions$treatment)) {
     geom_smooth(method = "lm", se = TRUE, fullrange = TRUE, color = "blue") +
     scale_x_continuous() +
     scale_y_continuous(limits = c(-0.2, .60)) +
-    labs(title = paste("CATE by Savings", t),
+    labs(title = paste(t),
          x = "Savings",
          y = "CATE") +
     theme_classic()
@@ -895,7 +1010,7 @@ cf_import <- variable_importance(cf_1)
 rowwnames <-  c("Incm_mdn", #important
                   "saving_dummy") #important
 
-cf_plot$tau_hat <- predict(cf_1, covariates, estimate.variance = T)$predictions
+cf_plot$tau_hat <- as.data.frame(predict(cf_1, covariates, estimate.variance = T)$predictions)
 cf_plot$sigma_hat <- predict(cf_1, covariates, estimate.variance = T)$variance.estimates
 cfplot <- cf_plot %>% mutate(upper = tau_hat + 1.96 * sigma_hat,
                              lower = tau_hat - 1.96 * sigma_hat)
@@ -918,7 +1033,7 @@ median_inc_plot <- ggplot(cf_plot, aes(x = factor(Incm_mdn), y = tau_hat)) +
 
 
   # Plot the predicted values as a line
-  median_inc_plot <- ggplot(cf_plot, aes(x = saving_dummy, y = tau_hat)) +
+  median_sav_plot <- ggplot(cf_plot, aes(x = saving_dummy, y = tau_hat)) +
     geom_point() +
     # Add shaded area for the 95% confidence interval
     geom_errorbar(aes(ymin = lower, ymax = upper), alpha = 0.2) +
@@ -962,17 +1077,28 @@ lines(X.test[, 1], pmax(0, X.test[, 1]), col = 2, lty = 1)
 
 # Multi_Arm Model
 
+
+  #Test variable importance
+kable(multi_cf_1_vi_t, "latex") %>%
+  kable_styling(bootstrap_options = NULL)
+
+
   # variable importance
-print(multi_cf_1_vi)
+kable(multi_cf_1_vi, "latex") %>%
+  kable_styling(bootstrap_options = NULL)
 
   # CATE Plots against Income
 Income_plots 
 
+ggsave(filename = "Income_plots", plot = Income_plots , device = "png", path = "2_Analysis//C_Output//")
+
   # CATE Plots against Savings
 savings_plots 
 
+ggsave(filename = "savings_plots", plot = savings_plots, device = "png", path = "2_Analysis//C_Output//")
   # ATE of each treatment on insurance uptake 
-multi_ate
+kable(multi_ate, "latex") %>%
+  kable_styling(bootstrap_options = NULL)
 
   # Could not calculate heterogenous effects, coding limitations 
 # Plot data by CATE instead. cannot doubly robust resulst to obtain HTE

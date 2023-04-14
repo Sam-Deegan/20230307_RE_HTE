@@ -43,13 +43,9 @@ The second study, by Dercon et al. (2014), investigates the effectiveness of mar
 The findings of Belissa et al. (2019) share similarities with Casaburi and Willis (2018) outside a contract farming context. The study finds that the demand-increasing effect of the IOUs may be more significant for players with low savings or income, in line with Dercon et al. (2014). The result suggests that liquidity constraints impede the uptake of drought-based insurance. By building on and extending previous research, the study provides a more nuanced understanding of the factors that affect insurance uptake among smallholder farmers in developing countries.
 Our heterogeneity analysis focuses on two household characteristics, household income and savings. The authors undertake limited heterogeneity analysis in the paper, comparing below and above median income and participants with and without savings. We take a more nuanced approach using machine learning to calculate heterogeneity across the income and savings spectrum. Specifically, we implement a Multi Arm Causal Forest model developed by Wager and Athey (2017) to estimate these effects across several treatments. This extension aims to determine whether the author’s theory that liquidity issues hamper drought-based insurance uptake among agricultural smallholders in Ethiopia is consistent with the results. 
 
-(More details of results and conclusions needed.)
+By analyzing data using causal inference methods, the study reveals that modifying insurance could benefit individuals with higher incomes. Additionally, the study identifies that the iddir marketing channel disproportionately affects individuals with higher incomes, which has significant implications for the design of marketing strategies for insurance programs in rural Ethiopia. Overall, the study offers insights for developing more effective insurance programs in rural areas and highlights the potential benefits of using causal inference techniques to explore complex issues in development economics.
 
 The paper is structured into six sections. The first section is the introduction, which overviews the study and its objectives. The second section is the literature review, which discusses the research on the topic and identifies the research gaps the study aims to address. The third section is the methodology, which describes the data sources, study design, and statistical techniques used to analyse the data. The fourth section is the results, which present the study findings. The fifth section, the extension, discusses the multi-arm causal forest approach used to estimate heterogeneous treatment effects. The sixth and final section is the conclusion, summarising the study's key findings and their implications for policy and future research.
-
-
-
-
 
 \section{Methodology}
 
@@ -97,18 +93,7 @@ However, the quasi-oracle approach has some weaknesses. The approach requires a 
 
 When checking the dataset we obtained from the official resource, we found that the numbers of \textit{Iddirs} of three groups---IBI, IOU and IOU_C, are much larger than the results in the original paper, while the total number of \textit{Iddirs} and the numbers of observations of all groups are consistent. This issue indicates the fact that households in each \textit{Iddir} received different kinds of treatment, which is inconsistent with what the authors state in the paper. And the original paper does not explain whether/how they recategorise the households into new \textit{Iddirs}. We tried to contact the corresponding author, but he could not provide us a clear explanation in time because of some private reasons. So, due to this ambiguity, our randomisation does not work as well as that of the original study, and it leads to regression results that are different from those obtained by the authors.
 
-
-
-
 \section{Results}
-
-\begin{itemize}
-
-\item Present the results of the replication study and compare them to the original results
-
-\item Discuss any discrepancies between the two studies and their potential causes
-
-\end{itemize}
 
 This chapter aims to replicate the findings of Belissa et al. (2019) in their study on drought insurance uptake among smallholder farmers in Ethiopia. The original study uses a randomised controlled trial (RCT) to test the effectiveness of modified index-based insurance products, which aim to alleviate liquidity constraints and increase trust among smallholders. Our replication examines the key findings of the original study, including the impact of deferred IOU payment, marketing through local leaders, and harsher contract terms on insurance uptake and defaults. By replicating the study, we aim to verify the robustness of the original findings and contribute to the reproducibility and transparency of research in development economics.
 
@@ -116,7 +101,28 @@ This chapter aims to replicate the findings of Belissa et al. (2019) in their st
 
 To begin our replication, we first verified the consistency of the randomisation process in our dataset with that reported by Belissa et al. (2019). The original paper states that randomisation occurred at the Iddir level, with 144 iddirs across the treatment and control arms. However, upon examination of the data, we found that the total number of iddirs across treatment arms was 226, with several Iddirs appearing in multiple arms. Only the Standard Insurance via Iddir Promotions seems unaffected. We confirmed that our replication code did not alter the data and obtained a second dataset from another source, which yielded the same result. Thus, we conclude that the replication data was systematically distorted before uploading. We have contacted the original author concerning the paper.
 
-<dummy table/counts by iddir and obs>
+\begin{table}
+\centering
+\begin{tabular}{l|r|r}
+\hline
+Uptake1 & Observations & Iddir\\
+\hline
+standard insurance through the usual channel (coops) & 59 & 15\\
+\hline
+Standard insurance through iddirs & 457 & 17\\
+\hline
+IOU insurance through iddirs with BC & 396 & 13\\
+\hline
+IOU insurance through iddirs without BC & 886 & 17\\
+\hline
+IOU insurance through the usual channel with BC & 69 & 12\\
+\hline
+IOU insurance through usual channel without BC & 167 & 14\\
+\hline
+Non-buyer & 6545 & 138\\
+\hline
+\end{tabular}
+\end{table}
 
 Note that using a distorted dataset will affect our ability to replicate further material from the original paper. In particular, this will affect our calculation of heterogeneous treatment effects in the extension due to the distortion of the randomisation arm, which relies on randomisation for unconfoundedness.
 
@@ -131,22 +137,23 @@ Comparing the constants of our balancing test to Table 1 in the original paper, 
 \begin{table}
 \centering
 \tiny
+\caption*{Balance tests on socio-economic variables.}
 \begin{tabular}{llllllllll}
 \hline
  & Age & Sex & Marital & Education & Family & Monthly & Drought & Insured\\
  & (years) & (1=male) & status & (years) & size & income & dummy & Before\\
  \hline
-Index Insurance via Iddir & -0.867** & 0.114*** & -0.018* & 0.050 & 0.123 & -198.243** & 0.018 & -0.051***\\
+Index Insurance via Iddir & -0.867** & 0.114** & -0.018 & 0.050 & 0.123 & -198.243** & 0.018 & -0.051***\\
  & (0.047) & (0.000) & (0.067) & (0.699) & (0.223) & (0.050) & (0.553) & (0.000)\\
- IOU Insurance & -2.317*** & 0.012 & -0.017 & 0.405** & -0.228* & -58.499 & -0.208*** & -0.090***\\
+ IOU Insurance & -2.317** & 0.012 & -0.017 & 0.405* & -0.228* & -58.499 & -0.208** & -0.090**\\
  & (0.000) & (0.645) & (0.172) & (0.019) & (0.088) & (0.663) & (0.000) & (0.000)\\
-IOU Insurance with Contract & -1.124** & 0.159*** & -0.024** & 0.058 & 0.403*** & 62.845 & -0.032 & -0.031**\\
+IOU Insurance with Contract & -1.124** & 0.159** & -0.024* & 0.058 & 0.403** & 62.845 & -0.032 & -0.031*\\
  & (0.020) & (0.000) & (0.024) & (0.692) & (0.000) & (0.577) & (0.347) & (0.014)\\
-IOU Insurance via Iddir & -0.521 & 0.121*** & -0.030*** & 0.334** & 0.317*** & 305.535*** & 0.238*** & 0.082***\\
+IOU Insurance via Iddir & -0.521 & 0.121** & -0.030* & 0.334* & 0.317** & 305.535* & 0.238* & 0.082**\\
  & (0.262) & (0.000) & (0.003) & (0.016) & (0.003) & (0.005) & (0.000) & (0.000)\\
-IOU via Iddir with Contract & -1.835*** & 0.023 & -0.005 & 0.108 & -0.378*** & -160.661 & -0.155*** & -0.081***\\
+IOU via Iddir with Contract & -1.835** & 0.023 & -0.005 & 0.108 & -0.378* & -160.661 & -0.155* & -0.081**\\
  & (0.002) & (0.378) & (0.687) & (0.541) & (0.006) & (0.241) & (0.000) & (0.000)\\
-Constant (Index Insurance) & 39.380*** & 0.470*** & 0.953*** & 1.902*** & 5.672*** & 854.298*** & 4.716*** & 0.121***\\
+Constant (Index Insurance) & 39.380** & 0.470* & 0.953* & 1.902* & 5.672* & 854.298* & 4.716* & 0.121**\\
 Observations & 8579 & 8579 & 8579 & 8579 & 8579 & 8579 & 8579 & 8579 \\
 Wald Tests & & & & & & & & \\
 IBI\_Iddir=IOU & 0.00 & 0.00 & 0.11 & 0.04 & 0.00 & 0.03 & 0.00 & 0\\
@@ -161,31 +168,34 @@ IOU\_C=IOU\_Iddir\_C & 0.00 & 0.00 & 0.04 & 0.82 & 0.00 & 0.12 & 0.00 & 0\\
 IOU\_Iddir=IOU\_Iddir\_C & 0.05 & 0.00 & 0.00 & 0.02 & 0.00 & 0.02 & 0.00 & 0\\
 \hline
 \end{tabular}
+\begin{tabular}{p{0.8\textwidth}}
+Notes: Robust standard errors in parentheses, clustered for 144 \textit{Iddirs}; ***p $<$ 0.01, **p $<$ 0.05, *p $<$ 0.1. Wald tests show p-values of equality. The constant reflects the average in the control group: Standard Index Insurance.
+\end{tabular}
 \end{table}
 
 We test whether the treatments’ coefficients are equal via the Wald test. In general, the results are highly significant except for the education variable. High significant levels would normally lead us to conclude that coefficients are unequal. However, in the context of data distortions noted in the dataset between randomisation and clusters, particularly as we are required to clusters robust errors by iddir, we cannot discount the possibility that our results are distorted.
 
 Distortions of the constants in Table 2 remain small but are more frequent. Only the constant for Wheat (5.09) matches the original paper. All other constants align closely with the original paper but differ somewhat. The increased frequency of departures from the original paper may not represent any distortion pattern, but this data contains more variance, and therefore distortions are more visible.
 
-<savings variable is too high. May be a coding error on our part. Need to fix. Must be if any Yes=1>
 \begin{table}
 \centering
 \tiny
+\caption*{Table 2: Balance tests for production variables and savings}
 \begin{tabular}{llllllllll}
 \hline
  & Maize & Haricot & Teff & Sorghum & Wheat & Barley & Land & Savings\\
  \hline
-Index Insurance via Iddir & 2.145*** & 0.027 & -0.181 & -0.061*** & -1.194*** & -0.066** & -0.427** & 0.063***\\
+Index Insurance via Iddir & 2.145** & 0.027 & -0.181 & -0.061* & -1.194* & -0.066* & -0.427** & 0.063***\\
  & (0.000) & (0.466) & (0.101) & (0.005) & (0.000) & (0.025) & (0.031) & (0.000)\\
- IOU Insurance & 0.345 & -0.023 & -0.037 & -0.049* & -1.188*** & -0.078** & 0.374 & -0.002\\
+ IOU Insurance & 0.345 & -0.023 & -0.037 & -0.049* & -1.188** & -0.078* & 0.374 & -0.002\\
  & (0.413) & (0.633) & (0.800) & (0.086) & (0.005) & (0.045) & (0.153) & (0.938)\\
 IOU Insurance with Contract & 0.403 & 0.022 & 0.016 & -0.043 & -0.859** & -0.071* & 0.022 & -0.035\\
  & (0.349) & (0.651) & (0.917) & (0.137) & (0.048) & (0.076) & (0.934) & (0.118)\\
-IOU Insurance via Iddir & 0.508 & -0.023 & 0.026 & -0.009 & 0.595* & -0.092*** & -1.189*** & 0.017\\
+IOU Insurance via Iddir & 0.508 & -0.023 & 0.026 & -0.009 & 0.595* & -0.092** & -1.189** & 0.017\\
  & (0.134) & (0.548) & (0.824) & (0.678) & (0.082) & (0.003) & (0.000) & (0.343)\\
-IOU via Iddir with Contract & 1.625*** & 0.093** & -0.248** & -0.030 & -1.048*** & -0.026 & 0.877*** & 0.010\\
+IOU via Iddir with Contract & 1.625** & 0.093* & -0.248** & -0.030 & -1.048** & -0.026 & 0.877** & 0.010\\
  & (0.000) & (0.022) & (0.044) & (0.209) & (0.003) & (0.427) & (0.000) & (0.591)\\
-Constant (Index Insurance) & 6.522*** & 0.190*** & 1.224*** & 0.146*** & 5.085*** & 0.167*** & 7.987*** & 1.213***\\
+Constant (Index Insurance) & 6.522** & 0.190* & 1.224* & 0.146* & 5.085* & 0.167* & 7.987* & 1.213**\\
 Observations & 8579 & 8579 & 8579 & 8579 & 8579 & 8579 & 8579 & 8579 \\
 Wald Tests & & & & & & & & \\
 IBI\_Iddir=IOU & 0.00 & 0.30 & 0.21 & 0.03 & 0.00 & 0.14 & 0.00 & 0.00\\
@@ -200,6 +210,9 @@ IOU\_C=IOU\_Iddir\_C & 0.00 & 0.09 & 0.06 & 0.31 & 0.02 & 0.26 & 0.00 & 0.06\\
 IOU\_Iddir=IOU\_Iddir\_C & 0.00 & 0.01 & 0.01 & 0.45 & 0.00 & 0.01 & 0.00 & 0.62\\
 \hline
 \end{tabular}
+\begin{tabular}{p{0.8\textwidth}}
+Notes: Robust standard errors in parentheses, clustered for 144 \textit{Iddirs}; ***p $<$ 0.01, **p $<$ 0.05, *p $<$ 0.1. Wald tests show p-values of equality. The constant reflects the average in the control group: Standard Index Insurance.
+\end{tabular}
 \end{table}
 
 Wald tests for joint significance between treatment arms in production variables are again extremely significant. These results are substantially more significant than in the original paper. The high significance level likely represents the earlier distortions noted in the dataset between randomisation and clusters, particularly as Iddir clusters robust errors. 
@@ -210,12 +223,54 @@ As noted previously regarding Table 1. The results of our Wald test are highly s
 
 Figure 2 illustrates the insurance uptake rates across various treatment arms. The IOU product's delayed payment option shows a substantial increase in uptake compared to standard insurance, jumping from 8% to 24%. The combination of IOU and promotion through Iddir outperforms all other treatments, with uptake rates reaching approximately 43%. These results are consistent with those reported in the original paper, except for Group 6, which received the most comprehensive intervention package, including IOU, promotion by Iddir leaders, and a binding contract. In our study, the uptake rate of this group was slightly lower than in the original experiment, specifically 27% compared to 32%. However, upon further examination of the data, we discovered that around 5% of households in this group took up an IOU via Iddir without signing a contract, which explains the discrepancy between our findings and those of the authors. Consequently, we have adopted the authors' calculation method in our subsequent research.
 
-<Fig. 2. Uptake rates across IOU treatments, 95% CI clustered at Iddir level.>
+![Figure 2: Uptake rates across IOU treatments, 95% CI clustered at Iddir level.](2_Analysis/C_Output/figure_2.png)
 
 The results of regression analysis, shown in Table 3, are also quite similar to what the authors obtained. IOU insurance with and without Iddir promotion both have significant positive effects on the uptake rate. However, introducing a binding contract to the IOU has a chastening effect on uptake rates with and without Iddir promotions, suggesting that much of the additional adoption induced by delayed payment is either motivated by the prospect of strategic default, or the result of farmers who are unsure about their ability to pay the future premium – and thus scared away once a binding contract is introduced – also in the absence of opportunistic intentions. People need a high degree of trust to sign a binding contract—especially when the consequences of signing are possibly not fully understood. The Iddir could assuage such concerns by acting as a trusted third party, resulting in increased uptake rates also in the presence of a contract. However, in our results, Index Insurance via Iddir has a significant impact on the uptake in the parsimonious model. Besides, Wald tests of most coefficient pairs again show extreme significance, substantially with much higher p-values than those in the original paper. This indicates that the effects of different treatment types vary to a large extent.
 
-Table 3
-Insurance uptake rates increase under IOU.
+\begin{table}
+\centering
+\tiny
+\caption*{Table 3: Insurance uptake rates increase under IOU}
+\begin{tabular}{llll}
+\hline
+ & (1) & (2) & (3) \\
+ & Parsimonious & Additional & Excluding\\
+ & model & controls & Dalota Mati \\
+\hline
+Index Insurance via Iddir & 0.071*** & 0.012 & 0.005 \\ 
+  & (0.016) & (0.014) & (0.014) \\  
+IOU Insurance & 0.166** & 0.150* & 0.120** \\ 
+  & (0.021) & (0.018) & (0.019) \\ 
+IOU Insurance with Contract & 0.033 & 0.030 & 0.011 \\ 
+  & (0.021) & (0.018) & (0.019) \\ 
+IOU Insurance via Iddir & 0.349** & 0.336* & 0.333** \\ 
+  & (0.017) & (0.015) & (0.015) \\ 
+IOU via Iddir with Contract & 0.245** & 0.179* & 0.175** \\ 
+  & (0.018) & (0.015) & (0.016) \\ 
+Constant & 0.077** & -0.349* & -0.299** \\ 
+  & (0.014) & (0.038) & (0.040) \\
+Additional controls & No & Yes & Yes \\
+Kebele fixed effects & No & Yes & Yes \\ 
+Iddir clustered s.e. & 144 & 144 & 144 \\
+Observations & 8,579 & 8,579 & 7969 \\ 
+Adjusted R$^{2}$ & 0.086 & 0.332 & 0.337 \\ 
+Wald tests \\
+IBI\_Iddir=IOU & 0.00 &  0.00 & 0.00 \\
+IBI\_Iddir=IOU\_C & 0.00 & 0.17 & 0.80 \\
+IBI\_Iddir=IOU\_Iddir & 0.00 & 0.00 & 0.00 \\
+IBI\_Iddir=IOU\_Iddir\_C & 0.00 & 0.00 & 0.00 \\
+IOU=IOU\_C & 0.00 & 0.00 & 0.00 \\
+IOU=IOU\_Iddir & 0.00 & 0.00 & 0.00 \\
+IOU=IOU\_Iddir\_C & 0.00 & 0.00 & 0.00 \\
+IOU\_C=IOU\_Iddir & 0.00 & 0.00 & 0.00 \\
+IOU\_C=IOU\_Iddir\_C & 0.00 & 0.00 & 0.00 \\
+IOU\_Iddir=IOU\_Iddir\_C & 0.00 & 0.00 & 0.00 \\
+\hline
+\end{tabular}
+\begin{tabular}{p{0.8\textwidth}}
+Notes: Robust standard errors in parentheses adjusted for 144 clusters at the \textit{Iddir} level. \textit{Kebele} fixed effects capture 12 \textit{Kebele} (municipalities) across 3 Districts. Additional controls include Age, Male, Married, Education level, Family size, Income last month, Drought dummy, Insured before dummy, Maize production, Haricot production, Teff production, Sorghum production, Wheat production, Barley production, Land size, and Savings. ***p $<$ 0.01, **p $<$ 0.05, *p $<$ 0.1. Wald tests show p-values of equality.
+\end{tabular}
+\end{table}
 
 
 \section{Extension}
@@ -224,13 +279,71 @@ This paper not only replicates the study by Belissa et al. (2019) on the adoptio
 
 While our primary variables of interest are income and savings, we take a data-driven approach to identify which variables in the dataset are most pertinent to insurance uptake. To accomplish this, we train a multi-arm causal-forest model using all twenty variables listed in the original paper's balancing tables. We also include information on treatment (randomisation) and outcomes (uptake) Our analysis reveals that income is the most frequently used variable to split the data in the model, followed by several farm output quantities such as wheat, teff, and maize. Interestingly, we find that haricot, sorghum, and barley productions are not considered relevant. In addition to income, only education, cultivated land size, and the savings dummy variable are used in more than 5% of cases.
 
-# <varaiable importance table 1>
+\begin{table}
+\centering
+\begin{tabular}{l|r}
+\hline
+  & x\\
+\hline
+TincomelastMnth & 0.2269768\\
+\hline
+Wheatqty & 0.1655113\\
+\hline
+Teffqty & 0.1388438\\
+\hline
+maizeqty & 0.1356723\\
+\hline
+Education & 0.0650387\\
+\hline
+Cultlandsize10\_a & 0.0633105\\
+\hline
+saving\_dummy & 0.0516264\\
+\hline
+sex\_dummy & 0.0467304\\
+\hline
+FSevdrought & 0.0451323\\
+\hline
+Age & 0.0423752\\
+\hline
+Famsize & 0.0171154\\
+\hline
+buyIBIdummy & 0.0010966\\
+\hline
+HaricotQty & 0.0004596\\
+\hline
+marriage\_dummy & 0.0000943\\
+\hline
+SorghumQty & 0.0000118\\
+\hline
+Barelyqty & 0.0000047\\
+\hline
+\end{tabular}
+\end{table}
 
 In our initial attempt, we eliminated observation variables with a variable importance score below 5%. However, we encountered overfitting issues due to the high variability of the data and the limited number of observations (8,759).
 
 A considerable amount of the highly variable data has numerous zero observations, making the use of quintiles or median splits unfeasible. Consequently, we chose to discard production variables, despite their prominent use in splits, and focused instead on more easily categorical data, such as age, education, marital status, log income, and savings, with the objective of avoiding overfitting. Although income has a large number of zero observations, we retained it to examine whether financially constrained smallholders derive more benefits from IOU treatments.
 
-# <varaiable importance table 2>
+\begin{table}
+\centering
+\begin{tabular}{l|r}
+\hline
+  & x\\
+\hline
+LTincomelastMnth & 0.4499650\\
+\hline
+Age & 0.1791593\\
+\hline
+Education & 0.1703164\\
+\hline
+saving\_dummy & 0.1259302\\
+\hline
+Famsize & 0.0720186\\
+\hline
+marriage\_dummy & 0.0026106\\
+\hline
+\end{tabular}
+\end{table}
 
 Running the model with our revised set of covariates we find that the the multi-arm causal model struggles to estimate propensity scores for our data. Propensity scores in the data are close to zero. Our model outputs are therefore unlikely to be reliable. We have identified several reasons why this may be the case. (1) High Dimensional Covariates, (2) Imbalanced Treatment Assignment, (3)  Model mispecification (4) Non-linear relationships between covariates and treatment assignment.
 
@@ -238,13 +351,32 @@ Guo and Fraser (2015) suggest that high dimensional covariates can lead to extre
 
 Despite our concerns about potential estimation issues, we proceeded to plot conditional average treatment effects (CATE) against log income for all treatment arms. Surprisingly, we found that CATE increases with income in all cases, contrary to the original paper's findings. This suggests that financial constraints may not be the main driver of insurance uptake. However, we cannot rule out the possibility that our income measure is unreliable. Many households reported no income in the previous month, which could be due to their reliance on agricultural incomes from harvests or operating in barter economies. Unfortunately, we cannot report confidence intervals as the variance estimates are extremely low, which could be misleading in terms of our level of confidence.
 
-<income plots>
+![Figure 4: Income by CATE.](2_Analysis//C_Output//Income_plots.png)
 
 We observe a comparable trend in our savings data, where the conditional average treatment effects (CATE) rise as savings increase. Furthermore, we notice a greater response of CATE to income and savings when iddir leaders are part of the marketing channel. It is plausible that iddir involvement is more effective in cases where smallholders are not financially constrained, and where their hesitation to buy drought-based insurance is due to a lack of confidence or knowledge about the product.
 
-<savings plots>
+![Figure 5: Savings by CATE.](2_Analysis/C_Output/savings_plots.png)
 
 We calculate ATE estimates for each treatment. We see that IOU and Iddir treatments increase insurance uptake. However the addition of more strict contracts, has a negative affect on uptake. These results are not statistically significant. However they are consistent with the authors original findings. 
+
+\begin{table}
+\centering
+\begin{tabular}{l|r|r|l|l}
+\hline
+  & estimate & std.err & contrast & outcome\\
+\hline
+Standard Iddir - Standrd & 0.0930619 & 0.0718894 & Standard Iddir - Standrd & Y.1\\
+\hline
+IOU Iddir Contract - Standrd & 0.2734636 & 0.1144630 & IOU Iddir Contract - Standrd & Y.1\\
+\hline
+IOU Iddir - Standrd & 0.3279834 & 0.1162710 & IOU Iddir - Standrd & Y.1\\
+\hline
+IOU Contract - Standrd & 0.0890267 & 0.0732976 & IOU Contract - Standrd & Y.1\\
+\hline
+IOU - Standrd & 0.3182769 & 0.1641750 & IOU - Standrd & Y.1\\
+\hline
+\end{tabular}
+\end{table}
 
 Regrettably, due to constraints in the coding, we cannot generate diverse treatment effects for the multi-arm causal model. The grf package does not support heterogeneous treatment effects in the causal model framework. Hence, we aim to present some partial evidence on the issue by simplifying the problem. As mentioned previously, it seems that the iddir marketing channel has a favorable effect on drought-based insurance uptake. To investigate whether Iddir's influence has an unequal impact on relatively more affluent landowners, we split our sample into those who were treated through the iddir marketing channel, regardless of the contract.
 
@@ -256,7 +388,9 @@ In this study, we replicate the main results obtained by Belissa et al. (2019) a
 
 The replication task does not fully reproduce the results obtained by the authors. We download the dataset from the official website and find an obvious data issue that leads to discrepancies in the results---the numbers of \textit{Iddirs} of three treatment groups are much higher than those shown in the original paper. This indicates that some \textit{Iddirs} received different types of policy impacts, which is different from what the authors state in the paper. With inability to solve this issue, we show that our randomisation does not work as well as the original study. However, we still obtain very similar results in the subsequent analysis, including the uptake rates of different types of insurance designs and the effects of the insurance designs gained from the regressions. We can still conclude that delaying weather insurance payment (IOU) increases uptake and promoting weather insurance via \textit{Iddir} leaders increases uptake of IOU. And we also find a negative role of binding contracts.
 
-We then use the multi-arm causal forest to extend the heterogeneity analysis.
+To summarize, our analysis sheds light on the factors that affect the uptake of drought-based insurance in rural Ethiopia. Our results suggest that financial constraints alone may not be the only obstacle to insurance uptake, as modifying insurance could particularly benefit individuals with higher incomes. However, we must exercise caution in interpreting these findings, given the potential for overfitting or data quality issues. Overall, our study underscores the potential advantages of leveraging causal inference techniques to explore complex issues in development economics, and offers insights for devising more effective insurance schemes in rural settings.
+
+Furthermore, we will present our discoveries on the impact of the iddir marketing channel on individuals with higher incomes and savings, as gauged by the single-arm causal forest analysis. Our visual findings imply that iddir promotions are more likely to entice individuals with higher incomes to participate, which has significant implications for the development of marketing strategies for insurance programs in rural Ethiopia. We will also discuss the limitations of our study, such as data quality concerns and potential overfitting, and suggest avenues for future research in this field.
 
 \bibliographystyle{aea}
 \bibliography{references}

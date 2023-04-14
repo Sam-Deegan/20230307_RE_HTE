@@ -782,9 +782,16 @@ for (t in unique(predictions$treatment)) {
   Saving_plot_list[[plot_var_name]] <- p
 }
 
+# Income CATE plots
 Income_plots <- grid.arrange(grobs = Income_plot_list, ncol = 3)
 
+# Savings CATE plots
 savings_plots <- grid.arrange(grobs = Saving_plot_list , ncol = 3)
+
+# ATE
+multi_ate <-average_treatment_effect(multi_cf_1)
+
+
 # Calculate Heterogeneous Treatment Effect 
 
 ## Old Code Rewriting #####################################################
@@ -888,7 +895,46 @@ cf_import <- variable_importance(cf_1)
 rowwnames <-  c("Incm_mdn", #important
                   "saving_dummy") #important
 
-cf_ate <- average_treatment_effect(cf_1)
+cf_plot$tau_hat <- predict(cf_1, covariates, estimate.variance = T)$predictions
+cf_plot$sigma_hat <- predict(cf_1, covariates, estimate.variance = T)$variance.estimates
+cfplot <- cf_plot %>% mutate(upper = tau_hat + 1.96 * sigma_hat,
+                             lower = tau_hat - 1.96 * sigma_hat)
+# Create a data frame with predicted values, lower and upper bounds of the 95% confidence interval, and covariates
+cf_plot$Incm_mdn <- covariates[, 1]
+cf_plot$saving_dummy <- covariates[, 2]
+
+# Plot the predicted values as a line
+median_inc_plot <- ggplot(cf_plot, aes(x = factor(Incm_mdn), y = tau_hat)) +
+  geom_point() +
+  # Add shaded area for the 95% confidence interval
+  geom_errorbar(aes(ymin = lower, ymax = upper), alpha = 0.2) +
+  # Add a horizontal line at y=0
+  # Add axis labels
+  scale_x_discrete(labels= c("Below Median", "Above Median")) +
+  xlab("Income") +
+  ylab("tau_hat")+
+  theme_classic()
+# Print summary of variables
+
+
+  # Plot the predicted values as a line
+  median_inc_plot <- ggplot(cf_plot, aes(x = saving_dummy, y = tau_hat)) +
+    geom_point() +
+    # Add shaded area for the 95% confidence interval
+    geom_errorbar(aes(ymin = lower, ymax = upper), alpha = 0.2) +
+    # Add a horizontal line at y=0
+    # Add axis labels
+    scale_x_discrete(labels= c("No Savings", "Savings")) + 
+  xlab("Savings") +
+    ylab("tau_hat")
+  # Print summary of variables
+
+
+# CATE on full sample
+cf_cate <- average_treatment_effect(cf_1, target.sample = "all")
+
+# CATT on full sample
+cf_catt <- average_treatment_effect(cf_1, target.sample = "treated")
 
 covariates_imp <- covariates %>% 
   as.data.frame() %>% 
@@ -897,11 +943,10 @@ covariates_imp <- covariates %>%
 cace_predict <- best_linear_projection(cf_1, covariates_imp, vcov.type = "HC3")
 summary(cace_predict)
 
-predictions <- predictions %>%
-  group_by(treatment) %>%
-  mutate(lower_ci = prediction - 1.96 * sqrt(variance),
-         upper_ci = prediction + 1.96 * sqrt(variance)) %>%
-  ungroup()
+plot(X.test[, 1], tau.hat$predictions, ylim = range(tau.hat$predictions + 1.96 * sigma.hat, tau.hat$predictions - 1.96 * sigma.hat, 0, 2), xlab = "x", ylab = "tau", type = "l")
+lines(X.test[, 1], tau.hat$predictions + 1.96 * sigma.hat, col = 1, lty = 2)
+lines(X.test[, 1], tau.hat$predictions - 1.96 * sigma.hat, col = 1, lty = 2)
+lines(X.test[, 1], pmax(0, X.test[, 1]), col = 2, lty = 1)
 
 # Calculate Average Treatment Effect
   # Estimate Average Treatment Effects and Error
@@ -917,7 +962,29 @@ predictions <- predictions %>%
 
 # Multi_Arm Model
 
+  # variable importance
+print(multi_cf_1_vi)
 
+  # CATE Plots against Income
+Income_plots 
+
+  # CATE Plots against Savings
+savings_plots 
+
+  # ATE of each treatment on insurance uptake 
+multi_ate
+
+  # Could not calculate heterogenous effects, coding limitations 
+# Plot data by CATE instead. cannot doubly robust resulst to obtain HTE
+
+#Simple causal model - on Iddir impact 
+cf_import
+
+  # ATE
+cf_ate 
+
+  # HTE
+cace_predict 
 
   # Residual plot
 

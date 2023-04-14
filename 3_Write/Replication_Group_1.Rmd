@@ -145,10 +145,6 @@ When checking the dataset we obtained from the official resource, we found that 
 
 \end{itemize}
 
-<<<<<<< HEAD
-
-The results of randomisation are shown in Table 1 and 2, from which we can see that the significance levels of much more coefficients increase compared to the original paper. It means that different treatment groups produce on average very different products and thus the treatment status may affect almost all important observables. Therefore, we cannot ignore the selection bias. We believe this is resulted from the data issue we show in the last section. However, we cannot correct it and the reliability of our study will be declined.
-=======
 This chapter aims to replicate the findings of Belissa et al. (2019) in their study on drought insurance uptake among smallholder farmers in Ethiopia. The original study uses a randomised controlled trial (RCT) to test the effectiveness of modified index-based insurance products, which aim to alleviate liquidity constraints and increase trust among smallholders. Our replication examines the key findings of the original study, including the impact of deferred IOU payment, marketing through local leaders, and harsher contract terms on insurance uptake and defaults. By replicating the study, we aim to verify the robustness of the original findings and contribute to the reproducibility and transparency of research in development economics.
 
 \subsection{Data}
@@ -166,7 +162,6 @@ To verify whether randomisation was successful and that treatment is not confoun
 We then assess the balancing of the randomisation process. The original paper used this to verify the success of the randomisation process for causal inference. We match the author’s approach and regress a battery of socio-economic, production and savings variables on the treatment groups. We do not include the control group, the “Standard Index Insurance” dummy, which is therefore reflected in the constant.
 
 Comparing the constants of our balancing test to Table 1 in the original paper, we attempt to trace the impact of the data distortion. Constants for Age, Sex, Education, Family Size, Monthly Income, Drought Severity and Previous Insurance are unaffected. The marriage dummy is significantly higher at 0.95 compared to 0.90 in the original paper. Point estimates for each independent variable adhere closely to those presented in the original paper. However, they do not match exactly in almost all cases. This would suggest that distortions in the dataset are relatively small.
->>>>>>> 624fc16b69c34032a124f3e6a6582b7e4d9bc088
 
 Table 1
 <Drought variable is too high. Coding error on our part. Need to fix. Must be if any Yes=1>
@@ -187,7 +182,7 @@ Figure 2 illustrates the insurance uptake rates across various treatment arms. T
 
 <Fig. 2. Uptake rates across IOU treatments, 95% CI clustered at Iddir level.>
 
-The results of regression analysis, shown in Table 3, are also quite similar to what the authors obtained. IOU insurance with and without Iddir promotion both have significant positive effects on the uptake rate. However, introducing a binding contract to the IOU has a chastening effect on uptake rates with and without Iddir promotions, suggesting that much of the additional adoption induced by delayed payment is either motivated by the prospect of strategic default, or the result of farmers who are unsure about their ability to pay the future premium – and thus scared away once a binding contract is introduced – also in the absence of opportunistic intentions. People need a high degree of trust to sign a binding contract—especially when the consequences of signing are possibly not fully understood. The Iddir could assuage such concerns by acting as a trusted third party, resulting in increased uptake rates also in the presence of a contract. However, in our results, Index Insurance via Iddir has a significant impact on the uptake in the parsimonious model. Besides, Wald tests of most coefficient pairs again show extreme significance, substantially with much higher p-values than those in the original paper. This indicates that the effects of different treatment types vary at a large extent.
+The results of regression analysis, shown in Table 3, are also quite similar to what the authors obtained. IOU insurance with and without Iddir promotion both have significant positive effects on the uptake rate. However, introducing a binding contract to the IOU has a chastening effect on uptake rates with and without Iddir promotions, suggesting that much of the additional adoption induced by delayed payment is either motivated by the prospect of strategic default, or the result of farmers who are unsure about their ability to pay the future premium – and thus scared away once a binding contract is introduced – also in the absence of opportunistic intentions. People need a high degree of trust to sign a binding contract—especially when the consequences of signing are possibly not fully understood. The Iddir could assuage such concerns by acting as a trusted third party, resulting in increased uptake rates also in the presence of a contract. However, in our results, Index Insurance via Iddir has a significant impact on the uptake in the parsimonious model. Besides, Wald tests of most coefficient pairs again show extreme significance, substantially with much higher p-values than those in the original paper. This indicates that the effects of different treatment types vary to a large extent.
 
 Table 3
 Insurance uptake rates increase under IOU.
@@ -299,3 +294,4 @@ name in place of BibFile in the bibliography command.
 \appendix
 
 \section{Mathematical Appendix}
+

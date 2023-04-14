@@ -306,7 +306,7 @@ table_1ab <- w_results_1a %>%
 colnames(data)
 
 # List of outcome variables for purr
-outcomes <- c("maizeqty", "HaricotQty", "Teffqty", "SorghumQty", "Wheatqty", "Barelyqty", "Cultlandsize10_a", "HaveSaving12_a")
+outcomes <- c("maizeqty", "HaricotQty", "Teffqty", "SorghumQty", "Wheatqty", "Barelyqty", "Cultlandsize10_a", "saving_dummy")
 
 # Loop through the list of outcomes and convert corresponding columns in df to numeric
 data[outcomes] <- map_dfc(data[outcomes], as.numeric)

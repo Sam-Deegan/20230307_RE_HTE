@@ -294,3 +294,4 @@ name in place of BibFile in the bibliography command.
 \appendix
 
 \section{Mathematical Appendix}
+

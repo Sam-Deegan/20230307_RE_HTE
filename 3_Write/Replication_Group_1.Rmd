@@ -155,6 +155,7 @@ When checking the dataset we obtained from the official resource, we found that 
 
 \end{itemize}
 
+
 The results of randomisation are shown in Table 1 and 2, from which we can see that the significance levels of much more coefficients increase compared to the original paper. It means that different treatment groups produce on average very different products and thus the treatment status may affect almost all important observables. Therefore, we cannot ignore the selection bias. We believe this is resulted from the data issue we show in the last section. However, we cannot correct it and the reliability of our study will be declined.
 
 Table 1

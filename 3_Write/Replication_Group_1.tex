@@ -54,7 +54,7 @@ University, \href{mailto:bob@example.com}{bob@example.com}.
 }
 
 \date{\today}
-\pubMonth{03}
+\pubMonth{04}
 \pubYear{2023}
 \pubVolume{1}
 \pubIssue{1}
@@ -88,6 +88,29 @@ findings have implications for policymakers and stakeholders working to
 improve the financial resilience of smallholder farmers in developing
 countries.
 
+The study extends the important findings of Casaburi and Willis (2018)
+outside the contract farming setting by analyse the uptake increase
+under other contracting arrangements, taking into consideration that
+most smallholders are not engaged in contract farming. The design also
+further extends the findings of Dercon et al.~(2014) because it combines
+marketing through informal groups with delayed premium---with possible
+synergies both in terms of uptake and defaults. The result is in line
+with the findings of Casaburi and Willis (2018) in the context of
+contract farming, but they find some evidence that the demand-increasing
+effect of the IOU may be larger for people with low savings or income,
+supporting the idea that liquidity constraints impede uptake of
+insurance.
+
+However, the heterogeneity analysis in this paper only focuses on two
+household characteristics and is simply based on subsample regressions,
+leaving a gap of heterogeneous effects of the insurance to be filled up.
+Based on this, we try to use the causal forests developed by Wager and
+Athey (2017) to look deeper into how different types of insurance
+designs affect people with diverse socio-economics and production
+characteristics in our study, improving the understanding of how to
+design contracts for different households in order to achieve better
+promotion.
+
 Our replication and extension study aims to build on the original
 study's findings by replicating the results using the same data and
 methods. Additionally, we will estimate heterogeneous treatment effects
@@ -107,11 +130,7 @@ contribute to a better understanding of the impact of insurance on
 smallholder farmers and inform policies aimed at improving their
 financial resilience.
 
-\textless To do: Discuss the importance of the original study's
-findings: Discuss the original study's findings and their significance
-in the context of development economics. You can also discuss any
-limitations of the original study that your replication and extension
-study can address\textgreater{}
+(More details of results and conclusions needed.)
 
 The paper is structured into six sections. The first section is the
 introduction, which provides an overview of the study and its
@@ -148,6 +167,213 @@ implications for policy and future research.
 
 \end{itemize}
 
+C1. Replication Methodology: In this subsection, we describe the
+methodology used to replicate the original study. We provide a detailed
+explanation of the data and methods used in the original study,
+including any necessary assumptions or model specifications. We also
+explain the steps taken to ensure that our replication accurately
+reproduces the original study's results.
+
+The authors worked together with Oromia Insurance Company (OIC) in
+Ethiopia and used multi-level randomization at the \textit{Iddir} level
+to assign the 144 \textit{Iddirs} to six experimental arms: 1) Standard
+Index Insurance (control group); 2) Standard Index Insurance via
+\textit{Iddir} promotions; 3) IOU insurance; 4) IOU insurance with
+Contract; 5) IOU insurance via \textit{Iddir} promotions; and 6) IOU
+insurance via \textit{Iddir} promotions with Contract. And they
+collected data on household demographic characteristics including age,
+sex, marital status, education and family size; household income,
+households' level of exposure to drought, experience in buying crop
+insurance before the experiment, household production and saving
+variables.
+
+To verify whether randomisation resulted in balanced groups they regress
+household observables and farming observables on treatment group dummies
+and a constant. The constant reflects the comparison group and the
+coefficients indicate whether other groups are significantly different
+from the comparison group. They test for differences between other
+groups by Wald tests. The results suggest the randomization worked well.
+
+Then, they present insurance uptake across treatment arms and conduct
+regression analysis with and without additional controls including
+\textit{Kebele} fixed effects and all baseline socio-economic
+characteristics, all showing that uptake change induced by
+\textit{Iddir} promotions in isolation is statistically insignificant,
+as is IOU with binding contract. They also exclude the subsample from a
+certain \textit{Kebele}, Dalota Mati, which all the defaults in the
+dataset come from, to increase the statistical power of the analysis,
+and the result shows robustness.
+
+They perform a heterogeneity analysis, to figure out if they can
+attribute the increase in uptake under IOU insurance to the relaxation
+of the liquidity constraint. To proxy for liquidity, they distinguish
+between households with above and below-median income, and between
+households with and without savings (self-reported). And for both
+proxies, the coefficients of the simple IOU product are higher for the
+liquidity-constrained. However, while the IOU coefficient of the (more)
+constrained subsample is consistently different from zero, and the
+coefficient for the complementary sample is not, the relevant
+coefficients are not statistically different from each other (according
+to a Wald test). This can also be seen by the insignificance of the
+coefficients using the interaction term instead of subsamples.
+
+To accurately replicate the results reproduced in the original study, we
+follow the steps shown in the paper and try to explain the dicrepancies
+if there are any of them. The steps of our replication are described as
+follows.
+
+We generate five dummies indicating whether each individual is in one of
+the five treatment groups and a dummy indicating the status of uptake.
+Then we generate the controls used in the article, including demographic
+variables: Age (in years), Sex (male=1; female=0), Marital status
+(married=1; not-married=0), Education (years of schooling), Family size,
+Total income in the last month (in Birr), Drought (a dummy taking value
+of 1 if the household experienced a drought in the last three years),
+and Insurance (a dummy taking the value of 1 if the household had
+purchased index insurance during the past three years); and farming
+variables: capturing quantities of crops produced in the last cropping
+season (maize, haricot, teff, sorghum, wheat, and barely), a measure of
+total land under cultivation, and a dummy taking the value 1 if the
+household had any formal savings.
+
+To conduct balancing tests, we regress observable controls, including
+demographic variables and farming variables, on treatment group dummies
+and a constant, to see if the coefficients of the group dummies are
+statistically significant. The randomisation works well if we see the
+coefficients of the treatment dummies are not significant, which shows
+that covariates do not affect the treatment assignment and therefore
+there is no severe selection bias.
+
+For regression analysis, we regress the uptake status on five group
+dummies, and then add controls and \textit{Kebele} fixed effects to the
+parsimonious model. Finally, we exclude the subsample from a the
+\textit{Kebele} Dalota Mati and run the same regression. We also conduct
+Wald tests to test if the coefficients of each two treatment dummies are
+statistically the same, verifying whether the treatment effects of
+different types of insurance designs differ.
+
+C2. Extension Methodology: In this subsection, we describe the
+methodology used for our extension analysis, which seeks to estimate
+heterogeneous treatment effects using a multi-arm causal forest
+approach. We provide an overview of the statistical methods employed,
+including any necessary assumptions or model specifications.
+
+For extension of the replication, we apply a non-parametric causal
+forest, which is developed by Wager and Athey (2017) and can achieve
+better matching with many covariates, for estimating heterogeneous
+treatment effects that extends Breiman's widely used random forest
+algorithm. In the potential outcomes framework with unconfoundedness,
+causal forests are pointwise consistent for the true treatment effect,
+and have an asymptotically Gaussian and centred sampling distribution.
+The causal forests give us a better understanding of treatment effect
+heterogeneity, so we apply this method to the original paper, which
+reveals the treatment effects of a drought insurance, to analyse the
+heterogeneity of the effects on individuals with different
+characteristics.
+
+The steps of the method can be briefly summarised as follows:
+
+Step 1: The causal forest uses double-sample trees to split the
+available training data into two parts: one half (\(I\)) for estimating
+the desired response inside each leaf, the other half (\(J\)) for
+placing splits. Double-sample regression trees make predictions
+\(\hat{\mu}(x)\) using
+
+\begin{equation}
+    \hat{\mu}(x)=\frac{1}{|i:X_{i}\in L(x)|}\sum\limits_{|i:X_{i}\in L(x)|}Y_{i}.
+\end{equation}
+
+on the leaf containing \(x\), only using the \(I\)-sample observations.
+The splitting criteria is the standard for CART regression trees
+(minimizing mean-squared error of predictions). Splits are restricted so
+that each leaf of the tree must contain \(k\) or more \(I\)-sample
+observations. And double-sample causal trees are defined similarly,
+except that for prediction we estimate \(\hat{\tau}(x)\) using
+
+\begin{equation}
+    \hat{\tau}(x)=\frac{1}{|i:W_{i}=1,X_{i}\in L|}\sum\limits_{|i:W_{i}=1,X_{i}\in L|}Y_{i}-\frac{1}{|i:W_{i}=0,X_{i}\in L|}\sum\limits_{|i:W_{i}=0,X_{i}\in L|}Y_{i}.
+\end{equation}
+
+on the \(I\) sample. Following Athey and Imbens (2016), the splits of
+the tree are chosen by maximizing the variance of \(\hat{\tau}(x)\) for
+\(i\in J\).
+
+Step 2: Propensity trees use only the treatment assignment indicator
+\(W_{i}\) to place splits, and save the responses \(W_{i}\) for
+estimating \(\tau\). The splits are chosen by optimizing, e.g., the Gini
+criterion used by CART for classification.
+
+Step 3: Compute a random forest by Monte Carlo averaging.
+
+Under regularity assumptions, causal forests can realise
+unconfoundedness and therefore achieve consistency without needing to
+explicitly estimate the propensity. And given all the preliminaries
+needed, we can state reliable results on the asymptotic normality of
+random forests.
+
+C3. Estimating Heterogeneous Treatment Effects: In this subsection, we
+provide a detailed explanation of our approach to estimating
+heterogeneous treatment effects using the multi-arm causal forest
+method. This includes information on the choice of tuning parameters,
+model diagnostics, and methods used for inference.
+
+Our approach to estimating heterogeneous treatment effects using the
+multi-arm causal forest method consists of several steps:
+
+Data preparation: We first prepare the data by selecting relevant
+covariates and outcome variables, and by converting categorical
+variables to numeric ones. We also specify the reference level for the
+treatment variable.
+
+Propensity score estimation: We estimate the propensity score, which is
+the probability of receiving treatment conditional on the covariates.
+This is done using logistic regression, where the treatment variable is
+the dependent variable and the covariates are the independent variables.
+
+Causal forest estimation: We then estimate the causal forest using the
+multi-arm version of the method, where we include all treatment arms in
+the model. The causal forest is a collection of decision trees, where
+each tree predicts the outcome variable for a particular treatment arm,
+given the covariates and the propensity score.
+
+Treatment effect estimation: Once the causal forest is estimated, we use
+it to estimate the heterogeneous treatment effects. This is done by
+calculating the difference in predicted outcomes between each treatment
+arm and the reference arm, for each individual. These differences are
+the estimated treatment effects.
+
+C4. Sensitivity Analyses: In this subsection, we describe the
+sensitivity analyses conducted to assess the robustness of our results
+to potential model misspecification and data limitations. We also
+discuss any limitations or caveats to our approach and provide
+suggestions for future research.
+
+We also perform a sensitivity analysis to assess the robustness of our
+results to different specifications of the causal forest model. This
+involves varying the parameters of the model, such as the number of
+trees and the minimum leaf size, and comparing the estimated treatment
+effects across different models.
+
+C5. Challenges and Limitations: In this subsection, we discuss any
+challenges faced in replicating the original study, including any
+discrepancies or issues with the data or code. We also discuss the
+limitations of our replication and extension analysis and provide
+suggestions for improving future research.
+
+When checking the dataset we obtained from the official resource, we
+found that the numbers of \textit{Iddirs} of three groups---IBI, IOU and
+IOU\_C, are much larger than the results in the original paper, while
+the total number of \textit{Iddirs} and the numbers of observations of
+all groups are consistent. This issue indicates the fact that households
+in each \textit{Iddir} received different kinds of treatment, which is
+inconsistent with what the authors state in the paper. And the original
+paper does not explain whether/how they recategorise the households into
+new \textit{Iddirs}. We tried to contact the corresponding author, but
+he could not provide us a clear explanation in time because of some
+private reasons. So, due to this ambiguity, our randomisation does not
+work as well as that of the original study, and it leads to regression
+results that are different from those obtained by the authors.
+
 \section{Results}
 
 \begin{itemize}
@@ -157,6 +383,60 @@ implications for policy and future research.
 \item Discuss any discrepancies between the two studies and their potential causes
 
 \end{itemize}
+
+The results of randomisation are shown in Table 1 and 2, from which we
+can see that the significance levels of much more coefficients increase
+compared to the original paper. It means that different treatment groups
+produce on average very different products and thus the treatment status
+may affect almost all important observables. Therefore, we cannot ignore
+the selection bias. We believe this is resulted from the data issue we
+show in the last section. However, we cannot correct it and the
+reliability of our study will be declined.
+
+Table 1 Balance tests on socio-economic variables.
+
+Table 2 Balance tests for production variables and savings.
+
+Figure 2 presents insurance uptake across treatment arms. The delayed
+payment of insurance offered by the IOU product increases uptake
+substantially when compared to standard insurance, from 8\% to 24\%. By
+far, the combination of IOU and promotion through Iddir outperforms all
+other treatments: uptake rates increase to around 43\%. Our results are
+the same as those in the original paper, except Group 6 that were
+offered the most elaborate package including IOU, \textit{Iddir} leader
+promotion, as well as the binding contract. The uptake rate of this
+group is a bit lower than that of the original experiment (27\%
+vs.~32\%). We checked the data and found out the reason for this
+discrepancy: there were 80 households (around 5\%) in this group finally
+took up an IOU via \textit{Iddir} but WITHOUT a contract, which fills
+exactly the gap between our result and the authors'. From this we know
+the authors take these households into account when calculating the
+uptake rate of this certain group. In our subsequent research, we follow
+the authors' way of calculation.
+
+Fig. 2. Uptake rates across IOU treatments, 95\% CI clustered at Iddir
+level.
+
+The results of regression analysis (Table 3) are also quite similar to
+what the authors obtained. Uptake of individual IOU contracts is not
+significantly greater than standard insurance in the presence of a
+binding contract. IOU insurance with and without Iddir promotion both
+have significant positive effects on the uptake rate. However,
+introducing a binding contract to the IOU has a chastening effect on
+uptake rates with and without Iddir promotions, suggesting that much of
+the additional adoption induced by delayed payment is either motivated
+by the prospect of strategic default, or the result of farmers who are
+unsure about their ability to pay the future premium -- and thus scared
+away once a binding contract is introduced -- also in the absence of
+opportunistic intentions. People need a high degree of trust to sign a
+binding contract---especially when the consequences of signing are
+possibly not fully understood. The Iddir could assuage such concerns by
+acting as a trusted third party, resulting in increased uptake rates
+also in the presence of a contract. However, in our results, Index
+Insurance via Iddir has a significant impact on the uptake in the
+parsimonious model, which may also be caused by the data issue.
+
+Table 3 Insurance uptake rates increase under IOU.
 
 \section{Extension}
 
@@ -179,6 +459,32 @@ implications for policy and future research.
 \item Recommend any changes to the original methods or data for future research
 
 \end{itemize}
+
+In this study, we replicate the main results obtained by Belissa et
+al.~(2019) and use the causal forests developed by Waiger and Athey
+(2017) to conduct heterogeneity analysis, trying to have a closer look
+at the heterogeneous effects of the multi-arm treatments of the
+insurance design on households with different socio-economic and
+production characteristics.
+
+The replication task does not fully reproduce the results obtained by
+the authors. We download the dataset from the official website and find
+an obvious data issue that leads to discrepancies in the results---the
+numbers of \textit{Iddirs} of three treatment groups are much higher
+than those shown in the original paper. This indicates that some
+\textit{Iddirs} received different types of policy impacts, which is
+different from what the authors state in the paper. With inability to
+solve this issue, we show that our randomisation does not work as well
+as the original study. However, we still obtain very similar results in
+the subsequent analysis, including the uptake rates of different types
+of insurance designs and the effects of the insurance designs gained
+from the regressions. We can still conclude that delaying weather
+insurance payment (IOU) increases uptake and promoting weather insurance
+via \textit{Iddir} leaders increases uptake of IOU. And we also find a
+negative role of binding contracts.
+
+We then use the multi-arm causal forest to extend the heterogeneity
+analysis.
 
 \hypertarget{document-styling-guidelines}{%
 \subsection{Document Styling

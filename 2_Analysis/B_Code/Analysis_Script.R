@@ -26,7 +26,7 @@ library(lmtest) # Regression Model Testing Package
 library(kableExtra) # Create LaTeX tables
 library(broom) # Convert statistical models into data frames
 library(cobalt)
-
+library(gridExtra)
 
 options(scipen = 999)
 ## 2. Prepare Data ############################################################
@@ -102,10 +102,23 @@ data$Education <- as.numeric(as.character(data$Education))
 # Numeric Farm Size
 data$Famsize <- as.numeric(as.character(data$Famsize))
 
+# Define Income Quintiles
+thirds <- quantile(data$LTincomelastMnth, probs = seq(0, 1, 0.5), duplicates.ok = TRUE)
+
+
+# create a new column indicating the quintile of each observation
+data$Incm_mdn <- cut(data$LTincomelastMnth, breaks = thirds, labels = FALSE, duplicates.ok = TRUE)
+
+quantile <- quantile(data$Cultlandsize10_a, probs = seq(0, 1, 0.2), duplicates.ok = TRUE)
+
+data$clt_lnd_qntl <- cut(data$Cultlandsize10_a, breaks = quantile , labels = FALSE, duplicates.ok = TRUE)
+
+plot(data$Cultlandsize10_a)
 # Create Treatment Dummies  "Standard Insurance (coops)" set as 0
 treatment_dummy <- model.matrix(~ Randomization1 - 1, data = data)
 
 levels(data$Uptake1)
+
 uptake_dummy <- model.matrix(~ Uptake1 - 1, data = data)
 
 # Combine Data and Dummies
@@ -447,7 +460,7 @@ data %>%
   # Parsimonious Model 
 prsmns_mdl  <- lm(Uptake1dummy ~ Dum_Insrnce_Iddr + Dum_IOU_Iddr_BC + Dum_IOU_Iddr + Dum_IOU_BC + Dum_IOU, data = data)
 prsmns_se <- vcovCL(prsmns_mdl, cluster = data$Iddir)
-excl_DltMt_mdl_2 <- coeftest(prsmns_mdl, prsmns_se)
+prsmns_mdl_2 <- coeftest(prsmns_mdl, prsmns_se)
 
   # Additional Model 
 addtnl_mdl  <- lm(Uptake1dummy ~ Dum_Insrnce_Iddr + Dum_IOU_Iddr_BC + Dum_IOU_Iddr + Dum_IOU_BC + Dum_IOU + Age + sex_dummy + marriage_dummy + Education + Famsize + TincomelastMnth + FSevdrought + buyIBIdummy + maizeqty + HaricotQty + Teffqty + SorghumQty + Wheatqty + Barelyqty + Cultlandsize10_a + saving_dummy + factor(Kebele), data = data)
@@ -551,6 +564,14 @@ figure_2
 
 ## 1. Prepare Data ############################################################
 
+
+# create a new column indicating the quintile of each observation
+data$Incm_qntl <- cut(data$LTincomelastMnth, breaks = thirds, labels = FALSE, duplicates.ok = TRUE)
+
+quantile <- quantile(data$Cultlandsize10_a, probs = seq(0, 1, 0.2), duplicates.ok = TRUE)
+
+data$clt_lnd_qntl <- cut(data$Cultlandsize10_a, breaks = quantile , labels = FALSE, duplicates.ok = TRUE)
+
   # Relevant Variables
 relevant_columns <- c("Identifier",
                       "Randomization1",
@@ -562,111 +583,211 @@ relevant_columns <- c("Identifier",
                       "Dum_IOU_BC",
                       "Dum_IOU",
                       "Age",
-                      "sex_dummy",
-                      "marriage_dummy",
-                      "saving_dummy",
                       "Education",
+                      "Mstatus",
                       "Famsize",
-                      "TincomelastMnth",
                       "LTincomelastMnth",
-                      "FSevdrought",
-                      "buyIBIdummy",
-                      "maizeqty",
-                      "HaricotQty",
-                      "Teffqty",
-                      "SorghumQty",
-                      "Wheatqty",
-                      "Barelyqty",
-                      "Cultlandsize10_a",
+                      "saving_dummy",
                       "Iddir") 
 
+cf_data <- data %>% select(relevant_columns)
   # Separate Dataset
-cf_data <- dplyr::select(data, relevant_columns)
+levels(cf_data$Randomization1) <- c("Standrd", "Standard Iddir","IOU Iddir Contract", "IOU Iddir", "IOU Contract", "IOU")
 
   # Format Outcome
 outcome <- as.matrix(cf_data$Uptake1)
 
-  # Format Treatment
 treatment <- as.factor(cf_data$Randomization1)
 
   # Format Covariates
-covariates <- as.matrix(data[,c("LTincomelastMnth",
-                                "Age",
-                                "sex_dummy",
-                                "marriage_dummy",
-                                "saving_dummy",
+covariates <- as.matrix(data[,c("Age",
                                 "Education",
+                                "marriage_dummy",
                                 "Famsize",
-                                "FSevdrought",
-                                "buyIBIdummy",
-                                "maizeqty",
-                                "HaricotQty",
-                                "Teffqty",
-                                "SorghumQty",
-                                "Wheatqty",
-                                "Barelyqty",
-                                "Cultlandsize10_a")])
+                                "LTincomelastMnth",
+                                "saving_dummy")])
 
 
-  # Format Iddir Cluster as 
+covariate_names <- c("Age",
+                     "Education",
+                     "marriage_dummy",
+                     "Famsize",
+                     "LTincomelastMnth",
+                     "saving_dummy")
+
+  # Format Iddir Cluster as numeric
 cf_data$Iddir <- as.numeric(cf_data$Iddir)
 
 ## 2. Fit Model  ##############################################################
 
-  # Run Multi-Arm Causal Model - Handles Multiple Treatments
-cf_multi <- multi_arm_causal_forest(covariates, outcome, treatment, cluster= cf_data$Iddir,num.trees = 2000, honesty = TRUE, seed =123)
+# Causal Forest Main Attempt
+multi_cf_1 <- multi_arm_causal_forest(covariates, #Covariates
+                                      outcome, # Outcomes
+                                      treatment, #Treatments
+                                      cluster= cf_data$Iddir, # cluster error by Iddir
+                                      num.trees = 2000, # standard tree number
+                                      honesty = TRUE, #Honesty on 
+                                      seed =123) # reproducible seed
+summary(multi_cf_1)
+  # Don't look at distribution of predictions. Unreliable. See 4.2.3: https://bookdown.org/stanfordgsbsilab/ml-ci-tutorial/hte-i-binary-treatment.html
 
-  # Plots
+# See how often a variable was used to split a tree
 
-  # Get sample weights: warning that the treatment propensities are close to 0 or 1
-dbl_rbst_scr <- get_scores(cf_multi)
+  # Split by covariate
+multi_cf_1_vi <- c(variable_importance(multi_cf_1))
+
+  # Names covariate importance
+names(multi_cf_1_vi) <- covariate_names
+
+  # Sort covariates by importance
+multi_cf_1_vi <- sort(multi_cf_1_vi, decreasing = TRUE)
+
+  # Print importance
+print(multi_cf_1_vi)
+
+# Get predictions from fitted forest
+multi_cf_1_tau <- predict(multi_cf_1, estimate.variance = T)
+
+# Plot CATES. This is a very bad way of coding. However the data table is very messy and I want to preserve the order to allow us to plot against covariates.
+
+  # Pull prediction data 
+
+    # pull raw prediction
+predictions <- as.data.frame(multi_cf_1_tau$predictions) 
+
+      # rename treatments for simplicity
+colnames(predictions) <- c("Standard Iddir","IOU Iddir Contract", "IOU Iddir", "IOU Contract", "IOU")
+
+      # apply sequence to the data so I can retain correct order for plots
+predictions <-  predictions %>% mutate(seq_number = row_number())
+
+      # Pivot data long for merge
+predictions <- predictions %>% pivot_longer(cols = c("Standard Iddir","IOU Iddir Contract", "IOU Iddir", "IOU Contract", "IOU"), names_to = "treatment", values_to = "Prediction") 
+
+  # Pull variance data
+
+    # Pull raw variance estimates
+variance_est <- as.data.frame(multi_cf_1_tau$variance.estimates) 
+
+    # Rename variance for simplicity
+colnames(variance_est) <- c("Standard Iddir","IOU Iddir Contract", "IOU Iddir", "IOU Contract", "IOU") 
+
+    # apply sequence to the data so I can retain correct order for plots
+variance_est <-  variance_est %>% mutate(seq_number = row_number()) 
+
+    # Pivot data long for merge
+variance_est <- variance_est %>% pivot_longer(cols = c("Standard Iddir","IOU Iddir Contract", "IOU Iddir", "IOU Contract", "IOU"), names_to = "treatment", values_to = "variance") 
+
+  # Merge prediction and variance data.
+
+    # Bind variance to predictions
+predictions <- cbind(predictions, variance_est$variance)
+
+    # Rename columns
+colnames(predictions) <- cbind("seq_number","treatment", "prediction", "variance") 
+head(predictions)
+
+  # Calculate confidence Intervals
+
+    # Calculate the lower and upper confidence intervals for the predictions by group
+predictions <- predictions %>%
+  group_by(treatment) %>%
+  mutate(lower_ci = prediction - 1.96 * sqrt(variance),
+         upper_ci = prediction + 1.96 * sqrt(variance)) %>%
+  ungroup()
+
+covariates <-  covariates %>% as.data.frame() %>% mutate(seq_number = row_number()) 
+predictions <- left_join(predictions, as_tibble(covariates), by = "seq_number")
+    
+head(predictions)
+
+
+# Create an empty list to store the plots
+Income_plot_list <- list()
+
+for (t in unique(predictions$treatment)) {
+  # Subset the data for the current treatment group
+  subset_df <- predictions[predictions$treatment == t, ]
   
-
-# Run predict function to obtain CATE by treatment and confidence intervals
-predict_output <- predict(cf_multi, estimate.variance = TRUE)
-
-# Extract the number of treatments and observations
-num_treatments <- length(levels(factor(treatment)))
-num_obs <- length(treatment)
-
-# Create an empty data frame to store the CATE and confidence intervals
-ci_data <- data.frame(Estimate = numeric(num_treatments * num_obs), 
-                      Lower = numeric(num_treatments * num_obs),
-                      Upper = numeric(num_treatments * num_obs),
-                      treatment = factor(rep(levels(factor(treatment)), each = num_obs)))
-
-# Fill in the data frame with the CATE and confidence intervals
-for (i in 1:num_treatments) {
-  start_idx <- (i-1) * num_obs + 1
-  end_idx <- i * num_obs
-  ci_data[start_idx:end_idx, "Estimate"] <- predict_output$predictions[, i, 1]
-  ci_data[start_idx:end_idx, "Lower"] <- predict_output$predictions[, i, 1] - z * sqrt(predict_output$variances[, i])
-  ci_data[start_idx:end_idx, "Upper"] <- predict_output$predictions[, i, 1] + z * sqrt(predict_output$variances[, i])
-  ci_data[start_idx:end_idx, "treatment"] <- factor(rep(levels(factor(treatment))[i], each = num_obs))
+  # Create the plot using ggplot
+  p <- ggplot(subset_df, aes(x = LTincomelastMnth, y = prediction)) +
+    geom_point() +
+    geom_smooth(method = "lm", se = TRUE, fullrange = TRUE, color = "blue") +
+    scale_x_continuous() +
+    scale_y_continuous(limits = c(-0.2, .60)) +
+    labs(title = paste("CATE by Income", t),
+         x = "Log Income Previous Month",
+         y = "CATE") +
+    theme_classic()
+  
+  # Create a unique name for the plot based on treatment and LTincomelastMnth
+  lt_income <- unique(subset_df$LTincomelastMnth)
+  plot_name <- paste0(t)
+  
+  # Create a sequence number to make the file name unique for each iteration
+  seq_num <- 1
+  while (file.exists(paste0(plot_name, "_", seq_num, ".png"))) {
+    seq_num <- seq_num + 1
+  }
+  plot_name <- paste0(plot_name, "_", seq_num, ".png")
+  
+  # Save the plot with a unique name
+  ggsave(filename = plot_name, plot = p, device = "png", path = "2_Analysis//C_Output//")
+  
+  # Capture the output of the print function to a variable
+  p_output <- capture.output(print(p))
+  
+  # Assign the plot to a variable name and add it to the plot list
+  plot_var_name <- paste0("plot_", t)
+  Income_plot_list[[plot_var_name]] <- p
 }
-     
 
-# Plot the CATE by treatment with 95% CIs
-library(ggplot2)
-ggplot(ci_data, aes(x = treatment, y = Estimate, ymin = Lower, ymax = Upper)) +
-  geom_point(size = 3, color = "blue") +
-  geom_errorbar(width = 0.2, color = "blue") +
-  labs(x = "Treatment", y = "CATE") +
-  theme_classic()
+# Create an empty list to store the plots
+Saving_plot_list <- list()
 
+for (t in unique(predictions$treatment)) {
+  # Subset the data for the current treatment group
+  subset_df <- predictions[predictions$treatment == t, ]
+  
+  # Create the plot using ggplot
+  p <- ggplot(subset_df, aes(x = LTincomelastMnth, y = prediction)) +
+    geom_point() +
+    geom_smooth(method = "lm", se = TRUE, fullrange = TRUE, color = "blue") +
+    scale_x_continuous() +
+    scale_y_continuous(limits = c(-0.2, .60)) +
+    labs(title = paste("CATE by Savings", t),
+         x = "Savings",
+         y = "CATE") +
+    theme_classic()
+  
+  # Create a unique name for the plot based on treatment and LTincomelastMnth
+  lt_income <- unique(subset_df$LTincomelastMnth)
+  plot_name <- paste0(t)
+  
+  # Create a sequence number to make the file name unique for each iteration
+  seq_num <- 1
+  while (file.exists(paste0(plot_name, "_", seq_num, ".png"))) {
+    seq_num <- seq_num + 1
+  }
+  plot_name <- paste0(plot_name, "_", seq_num, ".png")
+  
+  # Save the plot with a unique name
+  ggsave(filename = plot_name, plot = p, device = "png", path = "2_Analysis//C_Output//")
+  
+  # Capture the output of the print function to a variable
+  p_output <- capture.output(print(p))
+  
+  # Assign the plot to a variable name and add it to the plot list
+  plot_var_name <- paste0("plot_", t)
+  Saving_plot_list[[plot_var_name]] <- p
+}
 
+Income_plots <- grid.arrange(grobs = Income_plot_list, ncol = 3)
 
-tau.hat <- cf_predict$predictions
+savings_plots <- grid.arrange(grobs = Saving_plot_list , ncol = 3)
+# Calculate Heterogeneous Treatment Effect 
 
-# Plot log of (TIncome Last month + 1) against CATE
-plot(covariates[,1], tau.hat[,2, 1], ylab = "tau.contrast")
-abline(0, 1, col = "red")
-
-#average treatment effedt
-average_treatment_effect(cf_multi, method = "AIPW",)
-
-  # Estimate CATE
-cf_predict_CATE <- predict(cf_multi, estimate_cate = TRUE)$predictions
+## Old Code Rewriting #####################################################
 
 # Get a warning that the treatment propensities are close to 0 or 1. This means treatment effects are not well identified
   # Issue is present in most treatment groups. minimum treatment propensities in each arm are close to 0.
@@ -682,78 +803,121 @@ cf_predict_CATE <- predict(cf_multi, estimate_cate = TRUE)$predictions
 # cf_multi indicates that production quantities have a variable importance exceeding .1. However, "maizeqty", "Teffqty", "Wheatqty" exceed 0
 
 # Format Covariates
-covariates <- as.matrix(data[,c("maizeqty",
-                                "HaricotQty",
-                                "Teffqty",
-                                "SorghumQty",
-                                "Wheatqty",
-                                "Barelyqty")])
+#covariates <- as.matrix(data[,c("maizeqty",
+#                                "HaricotQty",
+#                                "Teffqty",
+#                                "SorghumQty",
+#                                "Wheatqty",
+#                                "Barelyqty")])
 
 # Run Multi-Arm Causal Model - Handles Multiple Treatments
-cf_multi <- multi_arm_causal_forest(covariates, outcome, treatment, cluster= cf_data$Iddir,num.trees = 2000, seed =123)
+#cf_multi <- multi_arm_causal_forest(covariates, outcome, treatment, cluster= cf_data$Iddir,num.trees = 2000, seed =123)
 
 # Potential addition: 
-dbl_rbst_scr <- get_scores(cf_multi) # Improves result but issue persists, low propensity scores. Removing further was not helpful
+#dbl_rbst_scr <- get_scores(cf_multi) # Improves result but issue persists, low propensity scores. Removing further was not helpful
 
 # Return Datapoints to Fit Model
-cf_predict <- predict(cf_multi)
+#cf_predict <- predict(cf_multi)
 
 # Estimate CATE
-cf_predict_CATE <- predict(cf_multi, estimate_cate = TRUE)$predictions
+#cf_predict_CATE <- predict(cf_multi, estimate_cate = TRUE)$predictions
 
 # Problem solving 2: Imbalanced Treatment Assignment, No Solution
 
   # Format Covariates
-covariates <- as.matrix(data[,c("Age",
-                                "sex_dummy",
-                                "marriage_dummy",
-                                "saving_dummy",
-                                "Education",
-                                "Famsize",
-                                "FSevdrought",
-                                "buyIBIdummy",
-                                "maizeqty",
-                                "HaricotQty",
-                                "Teffqty",
-                                "SorghumQty",
-                                "Wheatqty",
-                                "Barelyqty",
-                                "Cultlandsize10_a")])
+#covariates <- as.matrix(data[,c("Age",
+#                                "sex_dummy",
+#                              "marriage_dummy",
+#                                "saving_dummy",
+#                                "Education",
+#                                "Famsize",
+#                                "FSevdrought",
+#                                "buyIBIdummy",
+#                                "maizeqty",
+#                                "HaricotQty",
+#                                "Teffqty",
+#                                "SorghumQty",
+#                                "Wheatqty",
+#                                "Barelyqty",
+#                                "Cultlandsize10_a")])
 
   # Check imbalanced treatment assignment
-smds <- cobalt::bal.tab(covariates, treatment, s.d.denom = "standard insurance through the usual channel (coops)")
+#smds <- cobalt::bal.tab(covariates, treatment, s.d.denom = "standard insurance through the usual channel (coops)")
   
   # Data is imbalanced (exceeds)
-summary(smds$Balance.Across.Pairs) # Max.Diff.Un is very close to the 0.2 threshold, but just below.
+# summary(smds$Balance.Across.Pairs) # Max.Diff.Un is very close to the 0.2 threshold, but just below.
 
 # Problem solving 3: Model mispecification. Non randomised control group. Not sure we can resolve this. Data issue
 
 # Problem solving 4: Non linear relationship between control group and covariates. Issue persists despite reduducing no of variables to logged quantities
 
 # Format Covariates
-covariates <- as.matrix(data[,c("LTincomelastMnth")])
+#covariates <- as.matrix(data[,c("LTincomelastMnth")])
 
-cf_multi <- multi_arm_causal_forest(covariates, outcome, treatment, cluster= cf_data$Iddir,num.trees = 2000, seed =123)
+# cf_multi <- multi_arm_causal_forest(covariates, outcome, treatment, cluster= cf_data$Iddir,num.trees = 2000, seed =123)
 
 # Potential addition: 
-dbl_rbst_scr <- get_scores(cf_multi)
+#dbl_rbst_scr <- get_scores(cf_multi)
 
 # Check imbalanced treatment assignment
-smds <- cobalt::bal.tab(covariates, treatment, s.d.denom = "standard insurance through the usual channel (coops)")
+# smds <- cobalt::bal.tab(covariates, treatment, s.d.denom = "standard insurance through the usual channel (coops)")
 
-## 3. Evaluate Model ##########################################################
+## 3. Simple Causal Model  ##########################################################
+
+treatment <- as.matrix(as.numeric(data$xIDDIR))
+
+# Format Covariates
+covariates <- as.matrix(data[,c("Incm_mdn",
+                                "saving_dummy")])
+
+data <- data %>% mutate(uptake_any= if_else(uptake1gr1 + uptake1gr1 + uptake1gr1 + uptake1gr1 + uptake1gr1 + uptake1gr1 >= 1, 1, 0))
+
+outcome <- as.matrix(data$uptake_any)
+
+# Causal Forest Main Attempt
+cf_1 <- causal_forest(covariates, #Covariates
+                      outcome, # Outcomes
+                      treatment, #Treatments
+                      cluster= cf_data$Iddir, # cluster error by Iddir
+                      num.trees = 2000, # standard tree number
+                      honesty = TRUE, #Honesty on
+                      seed =123) # reproducible seed
+
+cf_import <- variable_importance(cf_1)
+
+rowwnames <-  c("Incm_mdn", #important
+                  "saving_dummy") #important
+
+cf_ate <- average_treatment_effect(cf_1)
+
+covariates_imp <- covariates %>% 
+  as.data.frame() %>% 
+  select(c("Incm_mdn", "saving_dummy")) %>% as.matrix()
+
+cace_predict <- best_linear_projection(cf_1, covariates_imp, vcov.type = "HC3")
+summary(cace_predict)
+
+predictions <- predictions %>%
+  group_by(treatment) %>%
+  mutate(lower_ci = prediction - 1.96 * sqrt(variance),
+         upper_ci = prediction + 1.96 * sqrt(variance)) %>%
+  ungroup()
 
 # Calculate Average Treatment Effect
   # Estimate Average Treatment Effects and Error
-average_treatment_effect(cf_multi, method = "AIPW",) # AIPW is for doubly robust errors
+#average_treatment_effect(cf_multi, method = "AIPW",) # AIPW is for doubly robust errors
 
-tune_pa(covariates, outcome, treatment, cluster= cf_data$Iddir)
+#tune_pa(covariates, outcome, treatment, cluster= cf_data$Iddir)
 
   # Summary 
-summary(cf_multi)
+#summary(cf_multi)
 
 
 ## 4. Model Evaluation ########################################################
+
+# Multi_Arm Model
+
+
 
   # Residual plot
 

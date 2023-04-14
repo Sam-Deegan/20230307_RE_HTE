@@ -32,15 +32,6 @@ output:  rticles::aea_article
 
 \section{Introduction}
 
-
-\begin{itemize}
-
-\item  Briefly explain the original study and its contribution to the literature
-
-\item  Discuss the importance of replication in economics research and the goals of the replication paper
-
-\end{itemize}
-
 In this paper, we replicate "Liquidity Constraints, Informal Institutions, and the Adoption of Weather Insurance" by Belissa et al. (2019) and extend it to account for heterogeneous treatment effects via a Multi-Arm-Causal-Forest model. 
 The original study finds that drought insurance uptake among smallholder farmers in Ethiopia could be higher, as smallholders suffer from seasonal liquidity constraints associated with harvest periods. The paper builds upon previous work in the literature, which finds that downside production risks impede farm modernisation (Emerick et al., 2016). By introducing a novel insurance product which delays repayment (IOUs) until after the harvest, the authors find that insurance uptake can be considerably increased. 
 The authors conducted a Randomised Control Trial (RCT) in 2015 using a pre-existing index-based drought-insurance product offered by Oromia Insurance Company (OIC) in the Ethiopia Rift Valley area. The product is typically sold during the rainy season before the harvest, and payouts are determined based on local rainfall levels.
@@ -57,39 +48,29 @@ Our heterogeneity analysis focuses on two household characteristics, household i
 The paper is structured into six sections. The first section is the introduction, which overviews the study and its objectives. The second section is the literature review, which discusses the research on the topic and identifies the research gaps the study aims to address. The third section is the methodology, which describes the data sources, study design, and statistical techniques used to analyse the data. The fourth section is the results, which present the study findings. The fifth section, the extension, discusses the multi-arm causal forest approach used to estimate heterogeneous treatment effects. The sixth and final section is the conclusion, summarising the study's key findings and their implications for policy and future research.
 
 
-\section{Literature Review}
 
-\begin{itemize}
-
-\item Summarize the literature relevant to the original study and the replication
-
-\item Discuss any issues with the original study that have been raised in the literature
-
-\end{itemize}
 
 
 \section{Methodology}
 
-\begin{itemize}
+This subsection discusses the methodology used to replicate Belissa et al. (2019). We provide a detailed explanation of the data and methods used in the original study, including any necessary assumptions or model specifications. We also explain the steps to ensure our replication accurately reproduces the original study's results.
 
-\item Describe the data and methods used in the original study
+\subsection{Data}
+As established in the introduction, the authors randomise the availability of several alternative index-based insurance contracts at the Iddir-level to test the effect of their design on insurance uptake and premium defaults.
+The data gathered by the authors is cross-sectional in structure. All observations date to 2015? and contains 8,579 household observations. Six variations of index-based drought insurance were offered to smallholders. These are (1) Standard Index Insurance (control), (2) Standard Index Insurance via \textit{Iddir} promotions, (3) IOU insurance, (4) IOU insurance with Contract, (5) IOU insurance via \textit{Iddir} promotions; and (6) IOU insurance via \textit{Iddir} promotions with Contract. The availability of these treatments/products was randomised over 144 \textit{Iddirs}. In addition to randomising treatment the researchers collected data on socio-economic status , farm production  and savings to test whether randomisation was successful and to facilitate the estimation of causal effects. 
 
-\item Explain the steps taken to replicate the original study, including any changes made to the methods or data
-
-\item Discuss any challenges faced in replicating the original study
-
-\end{itemize}
-
-C1. Replication Methodology: In this subsection, we describe the methodology used to replicate the original study. We provide a detailed explanation of the data and methods used in the original study, including any necessary assumptions or model specifications. We also explain the steps taken to ensure that our replication accurately reproduces the original study's results.
-
+\subsection{Replication}
 The authors employed a multi-arm Randomized Control Trial (RCT) methodology to estimate the causal effects of their novel insurance products on index-based insurance uptake among smallholders. In contrast to traditional two-arm RCTs, a multi-arm RCT compares more than two intervention groups to a control group, in this case, five. Each intervention group receives a different treatment, and the primary objective is to identify the most effective treatment(s), with the control group serving as the baseline comparison. Compared to two-arm RCTs, multi-arm RCTs offer several benefits, including increased study efficiency, potential identification of multiple effective treatments, and decreased risk of false-negative results. However, multi-arm RCTs can be more challenging due to increased trial design, analysis, and interpretation complexity. As a result, careful planning and execution are necessary to ensure the comparability of intervention arms and the study's ability to detect meaningful differences between the groups.
 The authors estimate causal effects for cross-sectional data via ordinary least squares (OLS). This method involves regressing the outcome variable on the treatment variable and any other relevant predictor variables. The coefficient for the treatment variable represents the average difference in the outcome variable between the treatment and control groups, controlling for any other relevant variables.
 OLS is a widely used statistical technique often applied in an RCT to estimate the effect of an intervention on an outcome variable. OLS offers several advantages, including its ability to control for other factors that might influence the outcome, making it easier to communicate study results to a broader audience, and providing estimates of treatment effects that can be used to calculate the cost-effectiveness of the intervention.
 However, OLS has some disadvantages that should be considered in an RCT. One major drawback is its assumption of a linear relationship between the outcome variable and explanatory variables. The results may be biased or inaccurate if this assumption is not met. OLS also does not account for potential confounding variables that were not included in the regression model, leading to biased estimates of treatment effects. Lastly, OLS requires a large sample size to provide reliable estimates of treatment effects, and if the sample size is too small, the results may be unreliable.
 
+The authors estimate Estimating causal effects for cross-sectional data via ordinary least squares (OLS). This method involves regressing the outcome variable on the treatment variable and any other relevant predictor variables. The coefficient for the treatment variable represents the average difference in the outcome variable between the treatment and control groups, controlling for any other relevant variables.
+OLS (Ordinary Least Squares) is a widely used statistical technique often applied in an RCT (Randomized Control Trial) to estimate the effect of an intervention on an outcome variable. OLS offers several advantages, including its ability to control for other factors that might influence the outcome, making it easier to communicate study results to a broader audience, and providing estimates of treatment effects that can be used to calculate the cost-effectiveness of the intervention.
+To verify whether randomisation was successful and that treatment is not confounded by other variables balancing tests are required to ensure no significant differences between groups before intervention. If groups differ significantly, it may bias the results making it difficult to mark causal inference. 
+However, OLS has some disadvantages that should be considered in an RCT. One major drawback is its assumption of a linear relationship between the outcome variable and explanatory variables. The results may be biased or inaccurate if this assumption is not met. OLS also does not account for potential confounding variables that were not included in the regression model, leading to biased estimates of treatment effects. Lastly, OLS requires a large sample size to provide reliable estimates of treatment effects, and if the sample size is too small, the results may be unreliable.
 
-C2. Extension Methodology: In this subsection, we describe the methodology used for our extension analysis, which seeks to estimate heterogeneous treatment effects using a multi-arm causal forest approach. We provide an overview of the statistical methods employed, including any necessary assumptions or model specifications.
-
+\subsection{Extension}
 We apply a multi-arm causal forest model methodology to extend the original report’s findings to estimate the heterogeneous treatment effects. A multi-arm causal forest is a machine-learning algorithm that can estimate the causal effect of multiple treatments on an outcome variable in a randomised control trial (RCT) setting. It extends the Random Forest algorithm commonly used for prediction tasks.
 
 The multi-arm causal forest model builds on the traditional Random Forest model by incorporating information about the treatment assignments in the RCT. The key idea of a causal forest model is to build causal trees, which are decision trees that partition the data based on the causal effect of a specific feature. These trees can then be aggregated to create a causal forest, which provides an estimate of the treatment effect. A multi-arm causal forest model broadens the base causal forest algorithm to model for multiple treatment groups compared to the control group.
@@ -114,25 +95,9 @@ However, the quasi-oracle approach has some weaknesses. The approach requires a 
 <point out that we have a small number of observations. Overfitting is a potential issues as we have a large number of covariates. We assume no confounders, so balancing must be correct otherwise we have bias.> 
 
 
-C3. Estimating Heterogeneous Treatment Effects: In this subsection, we provide a detailed explanation of our approach to estimating heterogeneous treatment effects using the multi-arm causal forest method. This includes information on the choice of tuning parameters, model diagnostics, and methods used for inference.
-
-Our approach to estimating heterogeneous treatment effects using the multi-arm causal forest method consists of several steps:
-
-Data preparation: We first prepare the data by selecting relevant covariates and outcome variables, and by converting categorical variables to numeric ones. We also specify the reference level for the treatment variable.
-
-Propensity score estimation: We estimate the propensity score, which is the probability of receiving treatment conditional on the covariates. This is done using logistic regression, where the treatment variable is the dependent variable and the covariates are the independent variables.
-
-Causal forest estimation: We then estimate the causal forest using the multi-arm version of the method, where we include all treatment arms in the model. The causal forest is a collection of decision trees, where each tree predicts the outcome variable for a particular treatment arm, given the covariates and the propensity score.
-
-Treatment effect estimation: Once the causal forest is estimated, we use it to estimate the heterogeneous treatment effects. This is done by calculating the difference in predicted outcomes between each treatment arm and the reference arm, for each individual. These differences are the estimated treatment effects.
-
-C4. Sensitivity Analyses: In this subsection, we describe the sensitivity analyses conducted to assess the robustness of our results to potential model misspecification and data limitations. We also discuss any limitations or caveats to our approach and provide suggestions for future research.
-
-We also perform a sensitivity analysis to assess the robustness of our results to different specifications of the causal forest model. This involves varying the parameters of the model, such as the number of trees and the minimum leaf size, and comparing the estimated treatment effects across different models.
-
-C5. Challenges and Limitations: In this subsection, we discuss any challenges faced in replicating the original study, including any discrepancies or issues with the data or code. We also discuss the limitations of our replication and extension analysis and provide suggestions for improving future research.
-
 When checking the dataset we obtained from the official resource, we found that the numbers of \textit{Iddirs} of three groups---IBI, IOU and IOU_C, are much larger than the results in the original paper, while the total number of \textit{Iddirs} and the numbers of observations of all groups are consistent. This issue indicates the fact that households in each \textit{Iddir} received different kinds of treatment, which is inconsistent with what the authors state in the paper. And the original paper does not explain whether/how they recategorise the households into new \textit{Iddirs}. We tried to contact the corresponding author, but he could not provide us a clear explanation in time because of some private reasons. So, due to this ambiguity, our randomisation does not work as well as that of the original study, and it leads to regression results that are different from those obtained by the authors.
+
+
 
 
 \section{Results}
@@ -163,8 +128,6 @@ We then assess the balancing of the randomisation process. The original paper us
 
 Comparing the constants of our balancing test to Table 1 in the original paper, we attempt to trace the impact of the data distortion. Constants for Age, Sex, Education, Family Size, Monthly Income, Drought Severity and Previous Insurance are unaffected. The marriage dummy is significantly higher at 0.95 compared to 0.90 in the original paper. Point estimates for each independent variable adhere closely to those presented in the original paper. However, they do not match exactly in almost all cases. This would suggest that distortions in the dataset are relatively small.
 
-Table 1
-<Drought variable is too high. Coding error on our part. Need to fix. Must be if any Yes=1>
 \begin{table}
 \centering
 \tiny
@@ -204,7 +167,6 @@ We test whether the treatments’ coefficients are equal via the Wald test. In g
 
 Distortions of the constants in Table 2 remain small but are more frequent. Only the constant for Wheat (5.09) matches the original paper. All other constants align closely with the original paper but differ somewhat. The increased frequency of departures from the original paper may not represent any distortion pattern, but this data contains more variance, and therefore distortions are more visible.
 
-Table 2
 <savings variable is too high. May be a coding error on our part. Need to fix. Must be if any Yes=1>
 \begin{table}
 \centering
@@ -241,6 +203,7 @@ IOU\_Iddir=IOU\_Iddir\_C & 0.00 & 0.01 & 0.01 & 0.45 & 0.00 & 0.01 & 0.00 & 0.62
 \end{table}
 
 Wald tests for joint significance between treatment arms in production variables are again extremely significant. These results are substantially more significant than in the original paper. The high significance level likely represents the earlier distortions noted in the dataset between randomisation and clusters, particularly as Iddir clusters robust errors. 
+
 As noted previously regarding Table 1. The results of our Wald test are highly significant. Usually, this would lead us to conclude that the coefficients are significantly different. However, we are reluctant to place faith in the results in light of our data issues.
 
 \subsection{Uptake Rates}
@@ -257,26 +220,37 @@ Insurance uptake rates increase under IOU.
 
 \section{Extension}
 
-\begin{itemize}
+This paper not only replicates the study by Belissa et al. (2019) on the adoption of weather insurance by smallholder farmers in Ethiopia, but also extends it by examining heterogeneous treatment effects using a Multi-Arm-Causal-Forest model. The original study found that the adoption of drought insurance among smallholder farmers could be increased by introducing a novel insurance product that delayed repayment until after harvest to alleviate liquidity constraints. The authors made three modifications to the product to increase uptake, and our extension aims to examine whether financial constraints indeed limit uptake, particularly among poorer smallholders. Our analysis focuses on household income and savings, using machine learning to estimate treatment effects across several treatments. Note our treatment data suffers from errors, so we are unlikely to find significant results. The study's findings have implications for policymakers and stakeholders working to improve the financial resilience of smallholder farmers in developing countries and increase their investment in new technologies. This extension builds on previous research and provides a more nuanced understanding of the factors that affect insurance uptake among smallholder farmers in developing countries.
 
-\item Describe any additional analyses or tests performed using the replicated data
+While our primary variables of interest are income and savings, we take a data-driven approach to identify which variables in the dataset are most pertinent to insurance uptake. To accomplish this, we train a multi-arm causal-forest model using all twenty variables listed in the original paper's balancing tables. We also include information on treatment (randomisation) and outcomes (uptake) Our analysis reveals that income is the most frequently used variable to split the data in the model, followed by several farm output quantities such as wheat, teff, and maize. Interestingly, we find that haricot, sorghum, and barley productions are not considered relevant. In addition to income, only education, cultivated land size, and the savings dummy variable are used in more than 5% of cases.
 
-\item Discuss the implications of the extended analysis for the original findings and the literature
+# <varaiable importance table 1>
 
-\end{itemize}
+In our initial attempt, we eliminated observation variables with a variable importance score below 5%. However, we encountered overfitting issues due to the high variability of the data and the limited number of observations (8,759).
+
+A considerable amount of the highly variable data has numerous zero observations, making the use of quintiles or median splits unfeasible. Consequently, we chose to discard production variables, despite their prominent use in splits, and focused instead on more easily categorical data, such as age, education, marital status, log income, and savings, with the objective of avoiding overfitting. Although income has a large number of zero observations, we retained it to examine whether financially constrained smallholders derive more benefits from IOU treatments.
+
+# <varaiable importance table 2>
+
+Running the model with our revised set of covariates we find that the the multi-arm causal model struggles to estimate propensity scores for our data. Propensity scores in the data are close to zero. Our model outputs are therefore unlikely to be reliable. We have identified several reasons why this may be the case. (1) High Dimensional Covariates, (2) Imbalanced Treatment Assignment, (3)  Model mispecification (4) Non-linear relationships between covariates and treatment assignment.
+
+Guo and Fraser (2015) suggest that high dimensional covariates can lead to extreme propensity scores, potentially caused by overfitting. To mitigate this issue, we excluded output quantities and focused on binary variables. However, we retained Income, a highly dimensional variable. According to Wager and Athey (2018), imbalanced treatment arms may result from differences in the size of treatment groups, as seen in our first table. Additionally, non-randomized control groups may introduce bias in propensity score estimation, as noted by Rosenbaum and Rubin (1983). Finally, non-linear relationships between covariates and treatment assignment can also impact propensity score estimation, according to Pearl (2016). While we primarily use logged or binary data in our estimation, this remains a possibility to consider.
+
+Despite our concerns about potential estimation issues, we proceeded to plot conditional average treatment effects (CATE) against log income for all treatment arms. Surprisingly, we found that CATE increases with income in all cases, contrary to the original paper's findings. This suggests that financial constraints may not be the main driver of insurance uptake. However, we cannot rule out the possibility that our income measure is unreliable. Many households reported no income in the previous month, which could be due to their reliance on agricultural incomes from harvests or operating in barter economies. Unfortunately, we cannot report confidence intervals as the variance estimates are extremely low, which could be misleading in terms of our level of confidence.
+
+<income plots>
+
+We observe a comparable trend in our savings data, where the conditional average treatment effects (CATE) rise as savings increase. Furthermore, we notice a greater response of CATE to income and savings when iddir leaders are part of the marketing channel. It is plausible that iddir involvement is more effective in cases where smallholders are not financially constrained, and where their hesitation to buy drought-based insurance is due to a lack of confidence or knowledge about the product.
+
+<savings plots>
+
+We calculate ATE estimates for each treatment. We see that IOU and Iddir treatments increase insurance uptake. However the addition of more strict contracts, has a negative affect on uptake. These results are not statistically significant. However they are consistent with the authors original findings. 
+
+Regrettably, due to constraints in the coding, we cannot generate diverse treatment effects for the multi-arm causal model. The grf package does not support heterogeneous treatment effects in the causal model framework. Hence, we aim to present some partial evidence on the issue by simplifying the problem. As mentioned previously, it seems that the iddir marketing channel has a favorable effect on drought-based insurance uptake. To investigate whether Iddir's influence has an unequal impact on relatively more affluent landowners, we split our sample into those who were treated through the iddir marketing channel, regardless of the contract.
+
 
 
 \section{Conclusion}
-
-\begin{itemize}
-
-\item Summarize the findings of the replication and extension studies
-
-\item Discuss the implications of the replication for the original study and the literature
-
-\item Recommend any changes to the original methods or data for future research
-
-\end{itemize}
 
 In this study, we replicate the main results obtained by Belissa et al. (2019) and use the causal forests developed by Waiger and Athey (2017) to conduct heterogeneity analysis, trying to have a closer look at the heterogeneous effects of the multi-arm treatments of the insurance design on households with different socio-economic and production characteristics.
 
@@ -284,76 +258,6 @@ The replication task does not fully reproduce the results obtained by the author
 
 We then use the multi-arm causal forest to extend the heterogeneity analysis.
 
-
-## Document Styling Guidelines
-\begin{itemize}
-\item Do not use an "Introduction" heading. Begin your introductory material
-before the first section heading.
-
-\item Avoid style markup (except sparingly for emphasis).
-
-\item Avoid using explicit vertical or horizontal space.
-
-\item Captions are short and go below figures but above tables.
-
-\item The tablenotes or figurenotes environments may be used below tables
-or figures, respectively, as demonstrated below.
-
-\item If you have difficulties with the mathtime package, adjust the package
-options appropriately for your platform. If you can't get it to work, just
-remove the package or see our technical support document online (please
-refer to the author instructions).
-
-\item If you are using an appendix, it goes last, after the bibliography.
-Use regular section headings to make the appendix headings.
-
-\item If you are not using an appendix, you may delete the appendix command
-and sample appendix section heading.
-
-\item Either the natbib package or the harvard package may be used with bibtex.
-To include one of these packages, uncomment the appropriate usepackage command
-above. Note: you can't use both packages at once or compile-time errors will result.
-
-\end{itemize}
-
-##
-\section{First Section in Body}
-
-Sample figure:
-
-\begin{figure}
-Figure here.
-
-\caption{Caption for figure below.}
-\begin{figurenotes}
-Figure notes without optional leadin.
-\end{figurenotes}
-\begin{figurenotes}[Source]
-Figure notes with optional leadin (Source, in this case).
-\end{figurenotes}
-\end{figure}
-
-Sample table:
-
-\begin{table}
-\caption{Caption for table above.}
-
-\begin{tabular}{lll}
-& Heading 1 & Heading 2 \\
-Row 1 & 1 & 2 \\
-Row 2 & 3 & 4%
-\end{tabular}
-\begin{tablenotes}
-Table notes environment without optional leadin.
-\end{tablenotes}
-\begin{tablenotes}[Source]
-Table notes environment with optional leadin (Source, in this case).
-\end{tablenotes}
-\end{table}
-
-References here (manual or bibTeX). If you are using bibTeX, add your bib file
-name in place of BibFile in the bibliography command.
-% Remove or comment out the next two lines if you are not using bibtex.
 \bibliographystyle{aea}
 \bibliography{references}
 

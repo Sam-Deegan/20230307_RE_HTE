@@ -178,7 +178,7 @@ Distortions of the constants in Table 2 remain small but are more frequent. Only
 Table 2
 <savings variable is too high. May be a coding error on our part. Need to fix. Must be if any Yes=1>
 
-Wald tests for joint significance between treatment arms in production variables are again extremely significant. These results are substantially more significant than in the original paper.  The high significance level likely represents the earlier distortions noted in the dataset between randomisation and clusters, particularly as Iddir clusters robust errors. 
+Wald tests for joint significance between treatment arms in production variables are again extremely significant. These results are substantially more significant than in the original paper. The high significance level likely represents the earlier distortions noted in the dataset between randomisation and clusters, particularly as Iddir clusters robust errors. 
 As noted previously regarding Table 1. The results of our Wald test are highly significant. Usually, this would lead us to conclude that the coefficients are significantly different. However, we are reluctant to place faith in the results in light of our data issues.
 
 \subsection{Uptake Rates}
@@ -187,6 +187,10 @@ Figure 2 illustrates the insurance uptake rates across various treatment arms. T
 
 <Fig. 2. Uptake rates across IOU treatments, 95% CI clustered at Iddir level.>
 
+The results of regression analysis, shown in Table 3, are also quite similar to what the authors obtained. IOU insurance with and without Iddir promotion both have significant positive effects on the uptake rate. However, introducing a binding contract to the IOU has a chastening effect on uptake rates with and without Iddir promotions, suggesting that much of the additional adoption induced by delayed payment is either motivated by the prospect of strategic default, or the result of farmers who are unsure about their ability to pay the future premium – and thus scared away once a binding contract is introduced – also in the absence of opportunistic intentions. People need a high degree of trust to sign a binding contract—especially when the consequences of signing are possibly not fully understood. The Iddir could assuage such concerns by acting as a trusted third party, resulting in increased uptake rates also in the presence of a contract. However, in our results, Index Insurance via Iddir has a significant impact on the uptake in the parsimonious model. Besides, Wald tests of most coefficient pairs again show extreme significance, substantially with much higher p-values than those in the original paper. This indicates that the effects of different treatment types vary at a large extent.
+
+Table 3
+Insurance uptake rates increase under IOU.
 
 
 \section{Extension}
